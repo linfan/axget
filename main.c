@@ -58,9 +58,12 @@ static struct option axel_options[] =
 };
 #endif
 
+#ifdef DEBUG
+FILE *axget_trace;
+#endif
+
 /* For returning string values from functions               */
 static char string[MAX_STRING];
-
 
 int main(int argc, char *argv[])
 {
@@ -71,6 +74,9 @@ int main(int argc, char *argv[])
     axel_t *axel;
     int i, j, cur_head = 0;
     char *s;
+
+    AXGET_MAIN_BEGIN
+
 #ifdef I18N
     setlocale(LC_ALL, "");
     bindtextdomain(PACKAGE, LOCALE);
@@ -79,6 +85,7 @@ int main(int argc, char *argv[])
 
     if(!conf_init(conf))
     {
+        AXGET_MAIN_LEAVE
         return(1);
     }
 
@@ -107,6 +114,8 @@ int main(int argc, char *argv[])
             if(!sscanf(optarg, "%i", &conf->max_speed))
             {
                 print_help();
+
+                AXGET_MAIN_LEAVE
                 return(1);
             }
 
@@ -116,6 +125,8 @@ int main(int argc, char *argv[])
             if(!sscanf(optarg, "%i", &conf->num_connections))
             {
                 print_help();
+
+                AXGET_MAIN_LEAVE
                 return(1);
             }
 
@@ -132,6 +143,8 @@ int main(int argc, char *argv[])
                 if(!sscanf(optarg, "%i", &conf->search_top))
                 {
                     print_help();
+
+                    AXGET_MAIN_LEAVE
                     return(1);
                 }
 
@@ -147,6 +160,8 @@ int main(int argc, char *argv[])
 
         case 'h':
             print_help();
+
+            AXGET_MAIN_LEAVE
             return(0);
 
         case 'v':
@@ -159,6 +174,8 @@ int main(int argc, char *argv[])
 
         case 'V':
             print_version();
+
+            AXGET_MAIN_LEAVE
             return(0);
 
         case 'q':
@@ -168,6 +185,8 @@ int main(int argc, char *argv[])
             if(open("/dev/null", O_WRONLY) != 1)
             {
                 fprintf(stderr, _("Can't redirect stdout to /dev/null.\n"));
+
+                AXGET_MAIN_LEAVE
                 return(1);
             }
 
@@ -175,6 +194,8 @@ int main(int argc, char *argv[])
 
         default:
             print_help();
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
     }
@@ -187,6 +208,8 @@ int main(int argc, char *argv[])
     if(argc - optind == 0)
     {
         print_help();
+
+        AXGET_MAIN_LEAVE
         return(1);
     }
     else if(strcmp(argv[optind], "-") == 0)
@@ -196,6 +219,8 @@ int main(int argc, char *argv[])
         if(scanf("%1024[^\n]s", s) != 1)
         {
             fprintf(stderr, _("Error when trying to read URL (Too long?).\n"));
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
     }
@@ -206,6 +231,8 @@ int main(int argc, char *argv[])
         if(strlen(s) > MAX_STRING)
         {
             fprintf(stderr, _("Can't handle URLs of length over %d\n"), MAX_STRING);
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
     }
@@ -226,6 +253,8 @@ int main(int argc, char *argv[])
         if(i < 0)
         {
             fprintf(stderr, _("File not found\n"));
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
 
@@ -254,6 +283,8 @@ int main(int argc, char *argv[])
         {
             print_messages(axel);
             axel_close(axel);
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
     }
@@ -265,6 +296,8 @@ int main(int argc, char *argv[])
         {
             print_messages(axel);
             axel_close(axel);
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
     }
@@ -283,6 +316,8 @@ int main(int argc, char *argv[])
         {
             print_messages(axel);
             axel_close(axel);
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
     }
@@ -308,6 +343,8 @@ int main(int argc, char *argv[])
                 if(fnlen + 1 + axelfnlen + 1 > MAX_STRING)
                 {
                     fprintf(stderr, _("Filename too long!\n"));
+
+                    AXGET_MAIN_LEAVE
                     return (1);
                 }
 
@@ -322,6 +359,8 @@ int main(int argc, char *argv[])
         if(access(fn, F_OK) == 0 && access(string, F_OK) != 0)
         {
             fprintf(stderr, _("No state file, cannot resume!\n"));
+
+            AXGET_MAIN_LEAVE
             return(1);
         }
 
@@ -365,6 +404,8 @@ int main(int argc, char *argv[])
     if(!axel_open(axel))
     {
         print_messages(axel);
+
+        AXGET_MAIN_LEAVE
         return(1);
     }
 
@@ -476,13 +517,18 @@ int main(int argc, char *argv[])
            (double) axel->bytes_per_second / 1024);
     i = axel->ready ? 0 : 2;
     axel_close(axel);
+
+    AXGET_MAIN_LEAVE
+
     return(i);
 }
 
 /* SIGINT/SIGTERM handler                       */
 void stop(int signal)
 {
+    AXGET_FUN_BEGIN
     run = 0;
+    AXGET_FUN_LEAVE
 }
 
 /* Convert a number of bytes to a human-readable form           */

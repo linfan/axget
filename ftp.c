@@ -27,17 +27,24 @@
 
 int ftp_connect(ftp_t *conn, char *host, int port, char *user, char *pass)
 {
+    AXGET_FUN_BEGIN
+
     conn->data_fd = -1;
     conn->message = malloc(MAX_STRING);
 
     if((conn->fd = tcp_connect(host, port, conn->local_if)) == -1)
     {
         sprintf(conn->message, _("Unable to connect to server %s:%i\n"), host, port);
+
+        AXGET_FUN_LEAVE
         return(0);
     }
 
     if(ftp_wait(conn) / 100 != 2)
+    {
+        AXGET_FUN_LEAVE
         return(0);
+    }
 
     ftp_command(conn, "USER %s", user);
 
@@ -48,10 +55,14 @@ int ftp_connect(ftp_t *conn, char *host, int port, char *user, char *pass)
             ftp_command(conn, "PASS %s", pass);
 
             if(ftp_wait(conn) / 100 != 2)
+            {
+                AXGET_FUN_LEAVE
                 return(0);
+            }
         }
         else
         {
+            AXGET_FUN_LEAVE
             return(0);
         }
     }
@@ -60,13 +71,19 @@ int ftp_connect(ftp_t *conn, char *host, int port, char *user, char *pass)
     ftp_command(conn, "TYPE I");
 
     if(ftp_wait(conn) / 100 != 2)
+    {
+        AXGET_FUN_LEAVE
         return(0);
+    }
 
+    AXGET_FUN_LEAVE
     return(1);
 }
 
 void ftp_disconnect(ftp_t *conn)
 {
+    AXGET_FUN_BEGIN
+
     if(conn->fd > 0)
         close(conn->fd);
 
@@ -81,24 +98,35 @@ void ftp_disconnect(ftp_t *conn)
 
     *conn->cwd = 0;
     conn->fd = conn->data_fd = -1;
+
+    AXGET_FUN_LEAVE
 }
 
 /* Change current working directory                 */
 int ftp_cwd(ftp_t *conn, char *cwd)
 {
+    AXGET_FUN_BEGIN
+
     /* Necessary at all? */
     if(strncmp(conn->cwd, cwd, MAX_STRING) == 0)
+    {
+        AXGET_FUN_LEAVE
         return(1);
+    }
 
     ftp_command(conn, "CWD %s", cwd);
 
     if(ftp_wait(conn) / 100 != 2)
     {
         fprintf(stderr, _("Can't change directory to %s\n"), cwd);
+
+        AXGET_FUN_LEAVE
         return(0);
     }
 
     strncpy(conn->cwd, cwd, MAX_STRING);
+
+    AXGET_FUN_LEAVE
     return(1);
 }
 
@@ -108,6 +136,8 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
     long long int i, j, size = MAX_STRING;
     char *reply, *s, fn[MAX_STRING];
 
+    AXGET_FUN_BEGIN
+
     /* Try the SIZE command first, if possible          */
     if(!strchr(file, '*') && !strchr(file, '?'))
     {
@@ -116,11 +146,15 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
         if(ftp_wait(conn) / 100 == 2)
         {
             sscanf(conn->message, "%*i %lld", &i);
+
+            AXGET_FUN_LEAVE
             return(i);
         }
         else if(conn->status / 10 != 50)
         {
             sprintf(conn->message, _("File not found.\n"));
+
+            AXGET_FUN_LEAVE
             return(-1);
         }
     }
@@ -128,16 +162,24 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
     if(maxredir == 0)
     {
         sprintf(conn->message, _("Too many redirects.\n"));
+
+        AXGET_FUN_LEAVE
         return(-1);
     }
 
     if(!ftp_data(conn))
+    {
+        AXGET_FUN_LEAVE
         return(-1);
+    }
 
     ftp_command(conn, "LIST %s", file);
 
     if(ftp_wait(conn) / 100 != 1)
+    {
+        AXGET_FUN_LEAVE
         return(-1);
+    }
 
     /* Read reply from the server.                  */
     reply = malloc(size);
@@ -164,6 +206,8 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
     if(ftp_wait(conn) / 100 != 2)
     {
         free(reply);
+
+        AXGET_FUN_LEAVE
         return(-1);
     }
 
@@ -189,6 +233,8 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
             sprintf(conn->message, _("Multiple matches for this URL.\n"));
 
         free(reply);
+
+        AXGET_FUN_LEAVE
         return(-1);
     }
 
@@ -208,6 +254,7 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
         if((reply = strchr(fn, '\n')) != NULL)
             *reply = 0;
 
+        AXGET_FUN_LEAVE
         return(ftp_size(conn, fn, maxredir - 1));
     }
     /* Normal file, so read the size! And read filename because of
@@ -223,14 +270,19 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
 
             if(i < 2)
             {
+                AXGET_FUN_LEAVE
                 return(-2);
             }
         }
 
         strcpy(file, fn);
         free(reply);
+
+        AXGET_FUN_LEAVE
         return(size);
     }
+
+    AXGET_FUN_LEAVE
 }
 
 /* Open a data connection. Only Passive mode supported yet, easier..    */
@@ -239,9 +291,14 @@ int ftp_data(ftp_t *conn)
     int i, info[6];
     char host[MAX_STRING];
 
+    AXGET_FUN_BEGIN
+
     /* Already done?                        */
     if(conn->data_fd > 0)
+    {
+        AXGET_FUN_LEAVE
         return(0);
+    }
 
     /*  if( conn->ftp_mode == FTP_PASSIVE )
         {
@@ -249,7 +306,10 @@ int ftp_data(ftp_t *conn)
     ftp_command(conn, "PASV");
 
     if(ftp_wait(conn) / 100 != 2)
+    {
+        AXGET_FUN_LEAVE
         return(0);
+    }
 
     *host = 0;
 
@@ -268,6 +328,8 @@ int ftp_data(ftp_t *conn)
     if(!*host)
     {
         sprintf(conn->message, _("Error opening passive data connection.\n"));
+
+        AXGET_FUN_LEAVE
         return(0);
     }
 
@@ -275,14 +337,18 @@ int ftp_data(ftp_t *conn)
                                     info[4] * 256 + info[5], conn->local_if)) == -1)
     {
         sprintf(conn->message, _("Error opening passive data connection.\n"));
+
+        AXGET_FUN_LEAVE
         return(0);
     }
 
+    AXGET_FUN_LEAVE
     return(1);
     /*  }
         else
         {
             sprintf( conn->message, _("Active FTP not implemented yet.\n" ) );
+            AXGET_FUN_LEAVE
             return( 0 );
         } */
 }
@@ -293,6 +359,9 @@ int ftp_command(ftp_t *conn, char *format, ...)
     va_list params;
     char cmd[MAX_STRING];
     va_start(params, format);
+
+    AXGET_FUN_BEGIN
+
     vsnprintf(cmd, MAX_STRING - 3, format, params);
     strcat(cmd, "\r\n");
     va_end(params);
@@ -303,10 +372,13 @@ int ftp_command(ftp_t *conn, char *format, ...)
     if(write(conn->fd, cmd, strlen(cmd)) != strlen(cmd))
     {
         sprintf(conn->message, _("Error writing command %s\n"), format);
+
+        AXGET_FUN_LEAVE
         return(0);
     }
     else
     {
+        AXGET_FUN_LEAVE
         return(1);
     }
 }
@@ -317,6 +389,9 @@ int ftp_wait(ftp_t *conn)
 {
     int size = MAX_STRING, r = 0, complete, i, j;
     char *s;
+
+    AXGET_FUN_BEGIN
+
     conn->message = realloc(conn->message, size);
 
     do
@@ -328,6 +403,8 @@ int ftp_wait(ftp_t *conn)
             if(i <= 0)
             {
                 sprintf(conn->message, _("Connection gone.\n"));
+
+                AXGET_FUN_LEAVE
                 return(-1);
             }
 
@@ -378,5 +455,7 @@ int ftp_wait(ftp_t *conn)
         *s = 0;
 
     conn->message = realloc(conn->message, max(strlen(conn->message) + 1, MAX_STRING));
+
+    AXGET_FUN_LEAVE
     return(conn->status);
 }

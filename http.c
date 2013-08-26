@@ -32,6 +32,9 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
     char auth[MAX_STRING];
     conn_t tconn[1];
     int i;
+
+    AXGET_FUN_BEGIN
+
     strncpy(conn->host, host, MAX_STRING);
     conn->proto = proto;
 
@@ -45,6 +48,8 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
             {
                 /* We'll put the message in conn->headers, not in request */
                 sprintf(conn->headers, _("Invalid proxy string: %s\n"), proxy);
+
+                AXGET_FUN_LEAVE
                 return(0);
             }
 
@@ -62,6 +67,8 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
     {
         /* We'll put the message in conn->headers, not in request */
         sprintf(conn->headers, _("Unable to connect to server %s:%i\n"), host, port);
+
+        AXGET_FUN_LEAVE
         return(0);
     }
 
@@ -87,19 +94,26 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
         }
     }
 
+    AXGET_FUN_LEAVE
     return(1);
 }
 
 void http_disconnect(http_t *conn)
 {
+    AXGET_FUN_BEGIN
+
     if(conn->fd > 0)
         close(conn->fd);
 
     conn->fd = -1;
+
+    AXGET_FUN_LEAVE
 }
 
 void http_get(http_t *conn, char *lurl)
 {
+    AXGET_FUN_BEGIN
+
     *conn->request = 0;
 
     if(conn->proxy)
@@ -123,23 +137,33 @@ void http_get(http_t *conn, char *lurl)
         else
             http_addheader(conn, "Range: bytes=%lld-", conn->firstbyte);
     }
+
+    AXGET_FUN_LEAVE
 }
 
 void http_addheader(http_t *conn, char *format, ...)
 {
     char s[MAX_STRING];
     va_list params;
+
+    AXGET_FUN_BEGIN
+
     va_start(params, format);
     vsnprintf(s, MAX_STRING - 3, format, params);
     strcat(s, "\r\n");
     va_end(params);
     strncat(conn->request, s, MAX_QUERY - strlen(conn->request) - 1);
+
+    AXGET_FUN_LEAVE
 }
 
 int http_exec(http_t *conn)
 {
     int i = 0;
     char s[2] = " ", *s2;
+
+    AXGET_FUN_BEGIN
+
 #ifdef DEBUG
     fprintf(stderr, "--- Sending request ---\n%s--- End of request ---\n", conn->request);
 #endif
@@ -155,6 +179,8 @@ int http_exec(http_t *conn)
         {
             /* We'll put the message in conn->headers, not in request */
             sprintf(conn->headers, _("Connection gone.\n"));
+
+            AXGET_FUN_LEAVE
             return(0);
         }
 
@@ -185,6 +211,8 @@ int http_exec(http_t *conn)
     *s2 = 0;
     strcpy(conn->request, conn->headers);
     *s2 = '\n';
+
+    AXGET_FUN_LEAVE
     return(1);
 }
 
@@ -193,15 +221,21 @@ char *http_header(http_t *conn, char *header)
     char s[32];
     int i;
 
+    AXGET_FUN_BEGIN
+
     for(i = 1; conn->headers[i]; i ++)
         if(conn->headers[i-1] == '\n')
         {
             sscanf(&conn->headers[i], "%31s", s);
 
             if(strcasecmp(s, header) == 0)
+            {
+                AXGET_FUN_LEAVE
                 return(&conn->headers[i+strlen(header)]);
+            }
         }
 
+    AXGET_FUN_LEAVE
     return(NULL);
 }
 
@@ -210,10 +244,17 @@ long long int http_size(http_t *conn)
     char *i;
     long long int j;
 
+    AXGET_FUN_BEGIN
+
     if((i = http_header(conn, "Content-Length:")) == NULL)
+    {
+        AXGET_FUN_LEAVE
         return(-2);
+    }
 
     sscanf(i, "%lld", &j);
+
+    AXGET_FUN_LEAVE
     return(j);
 }
 
@@ -222,6 +263,8 @@ void http_decode(char *s)
 {
     char t[MAX_STRING];
     int i, j, k;
+
+    AXGET_FUN_BEGIN
 
     for(i = j = 0; s[i]; i ++, j ++)
     {
@@ -237,12 +280,16 @@ void http_decode(char *s)
 
     t[j] = 0;
     strcpy(s, t);
+
+    AXGET_FUN_LEAVE
 }
 
 void http_encode(char *s)
 {
     char t[MAX_STRING];
     int i, j;
+
+    AXGET_FUN_BEGIN
 
     for(i = j = 0; s[i]; i ++, j ++)
     {
@@ -269,4 +316,6 @@ void http_encode(char *s)
 
     t[j] = 0;
     strcpy(s, t);
+
+    AXGET_FUN_LEAVE
 }

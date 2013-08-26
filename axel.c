@@ -41,6 +41,9 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     url_t *u;
     char *s;
     int i;
+
+    AXGET_FUN_BEGIN
+
     axel = malloc(sizeof(axel_t));
     memset(axel, 0, sizeof(axel_t));
     *axel->conf = *conf;
@@ -96,6 +99,8 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     {
         axel_message(axel, _("Could not parse URL.\n"));
         axel->ready = -1;
+        
+        AXGET_FUN_LEAVE
         return(axel);
     }
 
@@ -114,6 +119,8 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     {
         axel_message(axel, axel->conn[0].message);
         axel->ready = -1;
+
+        AXGET_FUN_LEAVE
         return(axel);
     }
 
@@ -123,6 +130,8 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     {
         axel_message(axel, axel->conn[0].message);
         axel->ready = -1;
+
+        AXGET_FUN_LEAVE
         return(axel);
     }
 
@@ -139,6 +148,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     if(strchr(axel->filename, '*') || strchr(axel->filename, '?'))
         strncpy(axel->filename, axel->conn[0].file, MAX_STRING);
 
+    AXGET_FUN_LEAVE
     return(axel);
 }
 
@@ -147,6 +157,8 @@ int axel_open(axel_t *axel)
 {
     int i, fd;
     long long int j;
+
+    AXGET_FUN_BEGIN
 
     if(axel->conf->verbose > 0)
         axel_message(axel, _("Opening output file %s"), axel->filename);
@@ -182,6 +194,8 @@ int axel_open(axel_t *axel)
         if((axel->outfd = open(axel->filename, O_WRONLY, 0666)) == -1)
         {
             axel_message(axel, _("Error opening local file"));
+
+            AXGET_FUN_LEAVE
             return(0);
         }
     }
@@ -194,6 +208,8 @@ int axel_open(axel_t *axel)
         if((axel->outfd = open(axel->filename, O_CREAT | O_WRONLY, 0666)) == -1)
         {
             axel_message(axel, _("Error opening local file"));
+
+            AXGET_FUN_LEAVE
             return(0);
         }
 
@@ -218,6 +234,7 @@ int axel_open(axel_t *axel)
         }
     }
 
+    AXGET_FUN_LEAVE
     return(1);
 }
 
@@ -225,6 +242,8 @@ int axel_open(axel_t *axel)
 void axel_start(axel_t *axel)
 {
     int i;
+
+    AXGET_FUN_BEGIN
 
     /* HTTP might've redirected and FTP handles wildcards, so
        re-scan the URL for every conn               */
@@ -267,6 +286,8 @@ void axel_start(axel_t *axel)
     /* The real downloading will start now, so let's start counting */
     axel->start_time = gettime();
     axel->ready = 0;
+
+    AXGET_FUN_LEAVE
 }
 
 /* Main 'loop'                              */
@@ -276,6 +297,8 @@ void axel_do(axel_t *axel)
     int hifd, i;
     long long int remaining,size;
     struct timeval timeval[1];
+
+    AXGET_FUN_BEGIN
 
     /* Create statefile if necessary                */
     if(gettime() > axel->next_state)
@@ -312,6 +335,8 @@ void axel_do(axel_t *axel)
         if(select(hifd + 1, fds, NULL, NULL, timeval) == -1)
         {
             axel->ready = -1;
+
+            AXGET_FUN_LEAVE
             return;
         }
     }
@@ -385,6 +410,8 @@ void axel_do(axel_t *axel)
                 {
                     axel_message(axel, _("Write error!"));
                     axel->ready = -1;
+
+                    AXGET_FUN_LEAVE
                     return;
                 }
 
@@ -405,7 +432,10 @@ void axel_do(axel_t *axel)
         }
 
     if(axel->ready)
+    {
+        AXGET_FUN_LEAVE
         return;
+    }
 
 conn_check:
 
@@ -471,6 +501,8 @@ conn_check:
     /* Ready?                           */
     if(axel->bytes_done == axel->size)
         axel->ready = 1;
+
+    AXGET_FUN_LEAVE
 }
 
 /* Close an axel connection                     */
@@ -478,6 +510,8 @@ void axel_close(axel_t *axel)
 {
     int i;
     message_t *m;
+
+    AXGET_FUN_BEGIN
 
     /* Terminate any thread still running               */
     for(i = 0; i < axel->conf->num_connections; i ++)
@@ -514,6 +548,8 @@ void axel_close(axel_t *axel)
 
     free(axel->conn);
     free(axel);
+
+    AXGET_FUN_LEAVE
 }
 
 /* time() with more precision                       */
@@ -530,15 +566,21 @@ void save_state(axel_t *axel)
     int fd, i;
     char fn[MAX_STRING+4];
 
+    AXGET_FUN_BEGIN
+
     /* No use for such a file if the server doesn't support
        resuming anyway..                        */
     if(!axel->conn[0].supported)
+    {
+        AXGET_FUN_LEAVE
         return;
+    }
 
     snprintf(fn, MAX_STRING, "%s.st", axel->filename);
 
     if((fd = open(fn, O_CREAT | O_TRUNC | O_WRONLY, 0666)) == -1)
     {
+        AXGET_FUN_LEAVE
         return;     /* Not 100% fatal..         */
     }
 
@@ -551,6 +593,8 @@ void save_state(axel_t *axel)
     }
 
     close(fd);
+
+    AXGET_FUN_LEAVE
 }
 
 /* Thread used to set up a connection                   */
@@ -558,6 +602,9 @@ void *setup_thread(void *c)
 {
     conn_t *conn = c;
     int oldstate;
+
+    AXGET_FUN_BEGIN
+
     /* Allow this thread to be killed at any time.          */
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldstate);
@@ -571,12 +618,16 @@ void *setup_thread(void *c)
             conn->last_transfer = gettime();
             conn->enabled = 1;
             conn->state = 0;
+
+            AXGET_FUN_LEAVE
             return(NULL);
         }
     }
 
     conn_disconnect(conn);
     conn->state = 0;
+
+    AXGET_FUN_LEAVE
     return(NULL);
 }
 
@@ -585,6 +636,9 @@ static void axel_message(axel_t *axel, char *format, ...)
 {
     message_t *m = malloc(sizeof(message_t)), *n = axel->message;
     va_list params;
+
+    AXGET_FUN_BEGIN
+
     memset(m, 0, sizeof(message_t));
     va_start(params, format);
     vsnprintf(m->text, MAX_STRING, format, params);
@@ -601,12 +655,16 @@ static void axel_message(axel_t *axel, char *format, ...)
 
         n->next = m;
     }
+    AXGET_FUN_LEAVE
 }
 
 /* Divide the file and set the locations for each connection        */
 static void axel_divide(axel_t *axel)
 {
     int i;
+
+    AXGET_FUN_BEGIN
+
     axel->conn[0].currentbyte = 0;
     axel->conn[0].lastbyte = axel->size / axel->conf->num_connections - 1;
 
@@ -623,4 +681,6 @@ static void axel_divide(axel_t *axel)
 #ifdef DEBUG
     printf("Downloading %lld-%lld using conn. %i\n", axel->conn[i-1].currentbyte, axel->conn[i-1].lastbyte, i - 1);
 #endif
+
+    AXGET_FUN_LEAVE
 }

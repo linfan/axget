@@ -37,21 +37,32 @@ int tcp_connect(char *hostname, int port, char *local_if)
     fprintf(stderr, "tcp_connect( %s, %i ) = ", hostname, port);
 #endif
 
+    AXGET_FUN_BEGIN
+
     /* Why this loop? Because the call might return an empty record.
        At least it very rarely does, on my system...        */
     for(fd = 0; fd < 5; fd ++)
     {
         if((host = gethostbyname(hostname)) == NULL)
+        {
+            AXGET_FUN_LEAVE
             return(-1);
+        }
 
         if(*host->h_name) break;
     }
 
     if(!host || !host->h_name || !*host->h_name)
+    {
+        AXGET_FUN_LEAVE
         return(-1);
+    }
 
     if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        AXGET_FUN_LEAVE
         return(-1);
+    }
 
     if(local_if && *local_if)
     {
@@ -62,6 +73,8 @@ int tcp_connect(char *hostname, int port, char *local_if)
         if(bind(fd, (struct sockaddr *) &local, sizeof(struct sockaddr_in)) == -1)
         {
             close(fd);
+
+            AXGET_FUN_LEAVE
             return(-1);
         }
     }
@@ -73,20 +86,28 @@ int tcp_connect(char *hostname, int port, char *local_if)
     if(connect(fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_in)) == -1)
     {
         close(fd);
+
+        AXGET_FUN_LEAVE
         return(-1);
     }
 
 #ifdef DEBUG
-    getsockname(fd, &local, &i);
+    getsockname(fd, (struct sockaddr*) &local, &i);
     fprintf(stderr, "%i\n", ntohs(local.sin_port));
 #endif
+
+    AXGET_FUN_LEAVE
     return(fd);
 }
 
+/* get ip from name of network interface card */
 int get_if_ip(char *iface, char *ip)
 {
     struct ifreq ifr;
     int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+
+    AXGET_FUN_BEGIN
+
     memset(&ifr, 0, sizeof(struct ifreq));
     strcpy(ifr.ifr_name, iface);
     ifr.ifr_addr.sa_family = AF_INET;
@@ -95,10 +116,15 @@ int get_if_ip(char *iface, char *ip)
     {
         struct sockaddr_in *x = (struct sockaddr_in *) &ifr.ifr_addr;
         strcpy(ip, inet_ntoa(x->sin_addr));
+
+        AXGET_FUN_LEAVE
         return(1);
     }
     else
     {
+        AXGET_FUN_LEAVE
         return(0);
     }
+
+    AXGET_FUN_LEAVE
 }

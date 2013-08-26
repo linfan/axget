@@ -33,6 +33,8 @@ int conn_set(conn_t *conn, char *set_url)
     char url[MAX_STRING];
     char *i, *j;
 
+    AXGET_FUN_BEGIN
+
     /* protocol://                          */
     if((i = strstr(set_url, "://")) == NULL)
     {
@@ -42,11 +44,16 @@ int conn_set(conn_t *conn, char *set_url)
     else
     {
         if(set_url[0] == 'f')
+        {
             conn->proto = PROTO_FTP;
+        }
         else if(set_url[0] == 'h')
+        {
             conn->proto = PROTO_HTTP;
+        }
         else
         {
+            AXGET_FUN_LEAVE
             return(0);
         }
 
@@ -149,41 +156,58 @@ int conn_set(conn_t *conn, char *set_url)
                 conn->port = 21;
     }
 
+    AXGET_FUN_LEAVE
     return(conn->port > 0);
 }
 
 /* Generate a nice URL string.                      */
 char *conn_url(conn_t *conn)
 {
+    AXGET_FUN_BEGIN
+
     if(conn->proto == PROTO_FTP)
+    {
         strcpy(string, "ftp://");
+    }
     else
+    {
         strcpy(string, "http://");
+    }
 
     if(*conn->user != 0 && strcmp(conn->user, "anonymous") != 0)
-        sprintf(string + strlen(string), "%s:%s@",
+    {
+        sprintf(string + strlen(string), "%s:%s@", 
                 conn->user, conn->pass);
+    }
 
     sprintf(string + strlen(string), "%s:%i%s%s",
             conn->host, conn->port, conn->dir, conn->file);
+
+    AXGET_FUN_LEAVE
     return(string);
 }
 
 /* Simple...                                */
 void conn_disconnect(conn_t *conn)
 {
+    AXGET_FUN_BEGIN
+
     if(conn->proto == PROTO_FTP && !conn->proxy)
         ftp_disconnect(conn->ftp);
     else
         http_disconnect(conn->http);
 
     conn->fd = -1;
+
+    AXGET_FUN_LEAVE
 }
 
 int conn_init(conn_t *conn)
 {
     char *proxy = conn->conf->http_proxy, *host = conn->conf->no_proxy;
     int i;
+
+    AXGET_FUN_BEGIN
 
     if(*conn->conf->http_proxy == 0)
     {
@@ -215,6 +239,8 @@ int conn_init(conn_t *conn)
         {
             conn->message = conn->ftp->message;
             conn_disconnect(conn);
+
+            AXGET_FUN_LEAVE
             return(0);
         }
 
@@ -223,6 +249,8 @@ int conn_init(conn_t *conn)
         if(!ftp_cwd(conn->ftp, conn->dir))
         {
             conn_disconnect(conn);
+
+            AXGET_FUN_LEAVE
             return(0);
         }
     }
@@ -234,6 +262,8 @@ int conn_init(conn_t *conn)
         {
             conn->message = conn->http->headers;
             conn_disconnect(conn);
+
+            AXGET_FUN_LEAVE
             return(0);
         }
 
@@ -241,19 +271,30 @@ int conn_init(conn_t *conn)
         conn->fd = conn->http->fd;
     }
 
+    AXGET_FUN_LEAVE
     return(1);
 }
 
 int conn_setup(conn_t *conn)
 {
+    AXGET_FUN_BEGIN
+
     if(conn->ftp->fd <= 0 && conn->http->fd <= 0)
+    {
         if(!conn_init(conn))
+        {
+            AXGET_FUN_LEAVE
             return(0);
+        }
+    }
 
     if(conn->proto == PROTO_FTP && !conn->proxy)
     {
         if(!ftp_data(conn->ftp))      /* Set up data connnection  */
+        {
+            AXGET_FUN_LEAVE
             return(0);
+        }
 
         conn->fd = conn->ftp->data_fd;
 
@@ -263,7 +304,10 @@ int conn_setup(conn_t *conn)
 
             if(ftp_wait(conn->ftp) / 100 != 3 &&
                     conn->ftp->status / 100 != 2)
+            {
+                AXGET_FUN_LEAVE
                 return(0);
+            }
         }
     }
     else
@@ -280,30 +324,45 @@ int conn_setup(conn_t *conn)
             http_addheader(conn->http, "%s", conn->conf->add_header[i]);
     }
 
+    AXGET_FUN_LEAVE
     return(1);
 }
 
 int conn_exec(conn_t *conn)
 {
+    AXGET_FUN_BEGIN
+
     if(conn->proto == PROTO_FTP && !conn->proxy)
     {
         if(!ftp_command(conn->ftp, "RETR %s", conn->file))
+        {
+            AXGET_FUN_LEAVE
             return(0);
+        }
 
+        AXGET_FUN_LEAVE
         return(ftp_wait(conn->ftp) / 100 == 1);
     }
     else
     {
         if(!http_exec(conn->http))
+        {
+            AXGET_FUN_LEAVE
             return(0);
+        }
 
+        AXGET_FUN_LEAVE
         return(conn->http->status / 100 == 2);
     }
+
+    AXGET_FUN_LEAVE
 }
 
 /* Get file size and other information                  */
 int conn_info(conn_t *conn)
 {
+    AXGET_FUN_BEGIN
+
     /* It's all a bit messed up.. But it works.         */
     if(conn->proto == PROTO_FTP && !conn->proxy)
     {
@@ -322,17 +381,27 @@ int conn_info(conn_t *conn)
         }
 
         if(!ftp_cwd(conn->ftp, conn->dir))
+        {
+            AXGET_FUN_LEAVE
             return(0);
+        }
 
         conn->size = ftp_size(conn->ftp, conn->file, MAX_REDIR);
 
         if(conn->size < 0)
+        {
             conn->supported = 0;
+        }
 
         if(conn->size == -1)
+        {
+            AXGET_FUN_LEAVE
             return(0);
+        }
         else if(conn->size == -2)
+        {
             conn->size = INT_MAX;
+        }
     }
     else
     {
@@ -344,7 +413,10 @@ int conn_info(conn_t *conn)
             conn->currentbyte = 1;
 
             if(!conn_setup(conn))
+            {
+                AXGET_FUN_LEAVE
                 return(0);
+            }
 
             conn_exec(conn);
             conn_disconnect(conn);
@@ -354,7 +426,10 @@ int conn_info(conn_t *conn)
                 break;
 
             if((t = http_header(conn->http, "location:")) == NULL)
+            {
+                AXGET_FUN_LEAVE
                 return(0);
+            }
 
             sscanf(t, "%255s", s);
 
@@ -379,6 +454,8 @@ int conn_info(conn_t *conn)
         if(i == MAX_REDIR)
         {
             sprintf(conn->message, _("Too many redirects.\n"));
+
+            AXGET_FUN_LEAVE
             return(0);
         }
 
@@ -403,9 +480,11 @@ int conn_info(conn_t *conn)
             else
                 *t = 0;
 
+            AXGET_FUN_LEAVE
             return(0);
         }
     }
 
+    AXGET_FUN_LEAVE
     return(1);
 }

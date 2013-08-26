@@ -86,8 +86,34 @@ typedef message_t if_t;
 #include "conn.h"
 #include "search.h"
 
+#define RET_OK  0
+#define RET_ERR -1
+
 #define min( a, b )     ( (a) < (b) ? (a) : (b) )
 #define max( a, b )     ( (a) > (b) ? (a) : (b) )
+
+#ifdef DEBUG
+extern FILE *axget_trace;
+#define AXGET_FUN_BEGIN fprintf(axget_trace, "%s [BEGIN] %s @ %s:%d\n", \
+        __TIME__, __FUNCTION__, __FILE__, __LINE__);
+#define AXGET_FUN_LEAVE fprintf(axget_trace, "%s [LEAVE] %s @ %s:%d\n", \
+        __TIME__, __FUNCTION__, __FILE__, __LINE__);
+#define AXGET_MAIN_BEGIN \
+    axget_trace = fopen("./axget.trc", "a"); \
+    if (!axget_trace) \
+    { fprintf(stderr, "Open trace file failed !"); AXGET_FUN_LEAVE; return RET_ERR; } \
+    fprintf(axget_trace, "-------- AXGET BEGIN --------\n"); \
+    AXGET_FUN_BEGIN
+#define AXGET_MAIN_LEAVE \
+    AXGET_FUN_LEAVE \
+    fprintf(axget_trace, "-------- AXGET END --------\n"); \
+    fclose(axget_trace);
+#else
+#define AXGET_FUN_BEGIN
+#define AXGET_FUN_LEAVE
+#define AXGET_MAIN_BEGIN
+#define AXGET_MAIN_LEAVE
+#endif
 
 typedef struct
 {

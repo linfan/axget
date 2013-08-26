@@ -46,10 +46,16 @@ int conf_loadfile(conf_t *conf, char *file)
     int i, line = 0;
     FILE *fp;
     char s[MAX_STRING], key[MAX_STRING], value[MAX_STRING];
+
+    AXGET_FUN_BEGIN
+
     fp = fopen(file, "r");
 
     if(fp == NULL)
+    {
+        AXGET_FUN_LEAVE
         return(1);           /* Not a real failure   */
+    }
 
     while(!feof(fp))
     {
@@ -107,6 +113,8 @@ int conf_loadfile(conf_t *conf, char *file)
         if(!st)
         {
             fprintf(stderr, _("Error in %s line %i.\n"), file, line);
+
+            AXGET_FUN_LEAVE
             return(0);
         }
 
@@ -119,6 +127,8 @@ int conf_loadfile(conf_t *conf, char *file)
     }
 
     fclose(fp);
+
+    AXGET_FUN_LEAVE
     return(1);
 }
 
@@ -126,6 +136,9 @@ int conf_init(conf_t *conf)
 {
     char s[MAX_STRING], *s2;
     int i;
+
+    AXGET_FUN_BEGIN
+
     /* Set defaults                         */
     memset(conf, 0, sizeof(conf_t));
     strcpy(conf->default_filename, "default");
@@ -156,14 +169,20 @@ int conf_init(conf_t *conf)
         strncpy(conf->http_proxy, s2, MAX_STRING);
 
     if(!conf_loadfile(conf, ETCDIR "/axelrc"))
+    {
+        AXGET_FUN_LEAVE
         return(0);
+    }
 
     if((s2 = getenv("HOME")) != NULL)
     {
         sprintf(s, "%s/%s", s2, ".axelrc");
 
         if(!conf_loadfile(conf, s))
+        {
+            AXGET_FUN_LEAVE
             return(0);
+        }
     }
 
     /* Convert no_proxy to a 0-separated-and-00-terminated list..   */
@@ -172,6 +191,8 @@ int conf_init(conf_t *conf)
             conf->no_proxy[i] = 0;
 
     conf->no_proxy[i+1] = 0;
+
+    AXGET_FUN_LEAVE
     return(1);
 }
 
@@ -179,6 +200,9 @@ int parse_interfaces(conf_t *conf, char *s)
 {
     char *s2;
     if_t *iface;
+
+    AXGET_FUN_BEGIN
+
     iface = conf->interfaces->next;
 
     while(iface != conf->interfaces)
@@ -196,6 +220,7 @@ int parse_interfaces(conf_t *conf, char *s)
         conf->interfaces = malloc(sizeof(if_t));
         memset(conf->interfaces, 0, sizeof(if_t));
         conf->interfaces->next = conf->interfaces;
+        AXGET_FUN_LEAVE
         return(1);
     }
 
@@ -229,5 +254,6 @@ int parse_interfaces(conf_t *conf, char *s)
         }
     }
 
+    AXGET_FUN_LEAVE
     return(1);
 }
