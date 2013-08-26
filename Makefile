@@ -22,7 +22,7 @@ clean:
 	rm -f *.o $(OUTFILE) search core *.mo
 
 distclean: clean
-	rm -f Makefile.settings config.h axel-*.tar axel-*.tar.gz axel-*.tar.bz2
+	rm -f Makefile.settings config.H axel-*.tar axel-*.tar.gz axel-*.tar.bz2
 
 install-man:
 	mkdir -p $(DESTDIR)$(MANDIR)/man1/
