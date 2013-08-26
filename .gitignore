@@ -17,5 +17,5 @@
 *.app
 
 # Generated files
-config.h
+config.H
 Makefile.settings
