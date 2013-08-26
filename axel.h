@@ -1,10 +1,10 @@
-  /********************************************************************\
-  * Axel -- A lighter download accelerator for Linux and other Unices. *
-  *                                                                    *
-  * Copyright 2001 Wilmer van der Gaast                                *
-  \********************************************************************/
+/********************************************************************\
+* Axel -- A lighter download accelerator for Linux and other Unices. *
+*                                                                    *
+* Copyright 2001 Wilmer van der Gaast                                *
+\********************************************************************/
 
-/* Main include file							*/
+/* Main include file                            */
 
 /*
   This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <netdb.h>
-#ifndef	NOGETOPTLONG
+#ifndef NOGETOPTLONG
 #define _GNU_SOURCE
 #include <getopt.h>
 #endif
@@ -53,27 +53,27 @@
 #include <net/if.h>
 #include <pthread.h>
 
-/* Internationalization							*/
+/* Internationalization                         */
 #ifdef I18N
-#define PACKAGE			"axel"
-#define _( x )			gettext( x )
+#define PACKAGE         "axel"
+#define _( x )          gettext( x )
 #include <libintl.h>
 #include <locale.h>
 #else
-#define _( x )			x
+#define _( x )          x
 #endif
 
-/* Compiled-in settings							*/
-#define MAX_STRING		1024
-#define MAX_ADD_HEADERS	10
-#define MAX_REDIR		5
-#define AXEL_VERSION_STRING	"2.4"
-#define DEFAULT_USER_AGENT	"Axel " AXEL_VERSION_STRING " (" ARCH ")"
+/* Compiled-in settings                         */
+#define MAX_STRING      1024
+#define MAX_ADD_HEADERS 10
+#define MAX_REDIR       5
+#define AXEL_VERSION_STRING "2.4"
+#define DEFAULT_USER_AGENT  "Axel " AXEL_VERSION_STRING " (" ARCH ")"
 
 typedef struct
 {
-	void *next;
-	char text[MAX_STRING];
+    void *next;
+    char text[MAX_STRING];
 } message_t;
 
 typedef message_t url_t;
@@ -86,29 +86,29 @@ typedef message_t if_t;
 #include "conn.h"
 #include "search.h"
 
-#define min( a, b )		( (a) < (b) ? (a) : (b) )
-#define max( a, b )		( (a) > (b) ? (a) : (b) )
+#define min( a, b )     ( (a) < (b) ? (a) : (b) )
+#define max( a, b )     ( (a) > (b) ? (a) : (b) )
 
 typedef struct
 {
-	conn_t *conn;
-	conf_t conf[1];
-	char filename[MAX_STRING];
-	double start_time;
-	int next_state, finish_time;
-	long long bytes_done, start_byte, size;
-	int bytes_per_second;
-	int delay_time;
-	int outfd;
-	int ready;
-	message_t *message;
-	url_t *url;
+    conn_t *conn;
+    conf_t conf[1];
+    char filename[MAX_STRING];
+    double start_time;
+    int next_state, finish_time;
+    long long bytes_done, start_byte, size;
+    int bytes_per_second;
+    int delay_time;
+    int outfd;
+    int ready;
+    message_t *message;
+    url_t *url;
 } axel_t;
 
-axel_t *axel_new( conf_t *conf, int count, void *url );
-int axel_open( axel_t *axel );
-void axel_start( axel_t *axel );
-void axel_do( axel_t *axel );
-void axel_close( axel_t *axel );
+axel_t *axel_new(conf_t *conf, int count, void *url);
+int axel_open(axel_t *axel);
+void axel_start(axel_t *axel);
+void axel_do(axel_t *axel);
+void axel_close(axel_t *axel);
 
 double gettime();
