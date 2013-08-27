@@ -92,7 +92,7 @@ typedef message_t if_t;
 #define min( a, b )     ( (a) < (b) ? (a) : (b) )
 #define max( a, b )     ( (a) > (b) ? (a) : (b) )
 
-#ifdef DEBUG
+#ifdef GEN_TRACE_FILE
 extern FILE *axget_trace;
 #define AXGET_FUN_BEGIN fprintf(axget_trace, "%s [ENTER] %s @ %s:%d\n", \
         __TIME__, __FUNCTION__, __FILE__, __LINE__);

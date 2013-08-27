@@ -58,7 +58,7 @@ static struct option axel_options[] =
 };
 #endif
 
-#ifdef DEBUG
+#ifdef GEN_TRACE_FILE
 FILE *axget_trace;
 #endif
 

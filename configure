@@ -15,7 +15,8 @@ locale='$sharedir/locale'
 
 i18n=1
 debug=0
-strip=1
+trace=1
+strip=0
 
 arch=`uname -s`
 
@@ -37,6 +38,7 @@ Option        Description                 Default
 
 --i18n=0/1  Disable/enable internationalization $i18n
 --debug=0/1 Disable/enable debugging            $debug
+--trace=0/1 Disable/enable generate trace file  $trace
 --strip=0/1 Disable/enable binary stripping     $strip
 EOF
         exit;
@@ -93,6 +95,10 @@ if [ "$debug" = "1" ]; then
     echo '#define DEBUG' >> config.H;
 else
     AXEL_CFLAGS="${AXEL_CFLAGS} -Os"
+fi
+
+if [ "$trace" = "1" ]; then
+    echo '#define GEN_TRACE_FILE' >> config.H;
 fi
 
 if type msgfmt > /dev/null 2> /dev/null; then :;else
@@ -243,6 +249,11 @@ if [ "$debug" = "1" ]; then
     echo '  Debugging enabled.';
 else
     echo '  Debugging disabled.';
+fi
+if [ "$trace" = "1" ]; then
+    echo '  Generate trace file enabled.';
+else
+    echo '  Generate trace file disabled.';
 fi
 if [ "$strip" = "1" ]; then
     echo '  Binary stripping enabled.';
