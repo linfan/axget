@@ -53,7 +53,7 @@
 # When downloading a HTTP directory/index page, (like http://localhost/~me/)
 # what local filename do we have to store it in?
 #
-# default_filename = default
+# default_filename = index.html
 
 # Save state every x seconds. Set this to 0 to disable state saving during
 # download. State files will always be saved when the program terminates

@@ -69,7 +69,7 @@ SHAREDIR=$sharedir
 MANDIR=$mandir
 LOCALE=$locale
 
-OUTFILE=axel
+OUTFILE=axget
 ARCH=$arch
 
 DESTDIR=
@@ -211,7 +211,7 @@ CYGWIN_* )
     if [ "$i18n" = "1" ]; then
         AXEL_LFLAGS="${AXEL_LFLAGS} -lintl"
     fi
-    echo 'OUTFILE=axel.exe' >> Makefile.settings
+    echo 'OUTFILE=axget.exe' >> Makefile.settings
 ;;
 * )
     AXEL_LFLAGS="${AXEL_LFLAGS} -pthread"

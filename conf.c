@@ -141,7 +141,7 @@ int conf_init(conf_t *conf)
 
     /* Set defaults                         */
     memset(conf, 0, sizeof(conf_t));
-    strcpy(conf->default_filename, "default");
+    strcpy(conf->default_filename, "index.html");
     *conf->http_proxy       = 0;
     *conf->no_proxy         = 0;
     conf->strip_cgi_parameters  = 1;

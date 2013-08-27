@@ -94,7 +94,7 @@ typedef message_t if_t;
 
 #ifdef DEBUG
 extern FILE *axget_trace;
-#define AXGET_FUN_BEGIN fprintf(axget_trace, "%s [BEGIN] %s @ %s:%d\n", \
+#define AXGET_FUN_BEGIN fprintf(axget_trace, "%s [ENTER] %s @ %s:%d\n", \
         __TIME__, __FUNCTION__, __FILE__, __LINE__);
 #define AXGET_FUN_LEAVE fprintf(axget_trace, "%s [LEAVE] %s @ %s:%d\n", \
         __TIME__, __FUNCTION__, __FILE__, __LINE__);
