@@ -43,12 +43,17 @@ uninstall-etc:
 
 ### MAIN PROGRAM
 
-$(OUTFILE): axel.o conf.o conn.o ftp.o http.o search.o tcp.o main.o
-	$(CC) *.o -o $(OUTFILE) $(LFLAGS)
+OBJS = axel.o conf.o conn.o ftp.o http.o search.o tcp.o
+
+$(OUTFILE): $(OBJS) main.o
+	$(CC) $^ -o $(OUTFILE) $(LFLAGS)
 	$(STRIP) $(OUTFILE)
 
 .c.o:
-	$(CC) -c $*.c -o $*.o $(CFLAGS)
+	$(CC) -c $*.c -o $*.o $(CFLAGS) -fPIC
+
+library: $(OBJS)
+	$(CC) $^ --share -o lib$(OUTFILE).so $(LFLAGS)
 
 install-bin:
 	mkdir -p $(DESTDIR)$(BINDIR)/
