@@ -19,7 +19,8 @@ install: install-bin install-etc install-man
 uninstall: uninstall-bin uninstall-etc uninstall-man
 
 clean:
-	rm -f *.o $(OUTFILE) search core *.mo
+	rm -f *.mo *.o $(OUTFILE) search core
+	$(MAKE) clean -C unittest
 
 distclean: clean
 	rm -f Makefile.settings config.H axel-*.tar axel-*.tar.gz axel-*.tar.bz2
@@ -53,9 +54,10 @@ $(OUTFILE): $(OBJS) main.o
 	$(CC) -c $*.c -o $*.o $(CFLAGS) -fPIC
 
 LIBOUTFILE = lib$(OUTFILE).so
-library: $(OBJS)
+unittest: $(OBJS)
 	$(CC) $^ --share -o $(LIBOUTFILE) $(LFLAGS)
 	mv $(LIBOUTFILE) unittest/lib/
+	$(MAKE) -C unittest
 
 install-bin:
 	mkdir -p $(DESTDIR)$(BINDIR)/
