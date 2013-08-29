@@ -19,3 +19,6 @@ axget_test
 
 # Test framework header files
 include/*.h
+
+# Generated files
+*.trc
