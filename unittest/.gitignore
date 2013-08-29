@@ -1,0 +1,21 @@
+# Object files
+*.o
+
+# Libraries
+lib/*.lib
+lib/*.a
+
+# Shared objects (inc. Windows DLLs)
+lib/*.dll
+lib/*.so
+lib/*.so.*
+lib/*.dylib
+
+# Executables
+axget_test
+*.exe
+*.out
+*.app
+
+# Test framework header files
+include/*.h

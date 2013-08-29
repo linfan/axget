@@ -52,8 +52,10 @@ $(OUTFILE): $(OBJS) main.o
 .c.o:
 	$(CC) -c $*.c -o $*.o $(CFLAGS) -fPIC
 
+LIBOUTFILE = lib$(OUTFILE).so
 library: $(OBJS)
-	$(CC) $^ --share -o lib$(OUTFILE).so $(LFLAGS)
+	$(CC) $^ --share -o $(LIBOUTFILE) $(LFLAGS)
+	mv $(LIBOUTFILE) unittest/lib/
 
 install-bin:
 	mkdir -p $(DESTDIR)$(BINDIR)/

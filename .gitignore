@@ -12,6 +12,7 @@
 *.dylib
 
 # Executables
+axget
 *.exe
 *.out
 *.app
