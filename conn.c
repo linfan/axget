@@ -25,6 +25,9 @@
 
 #include "axel.h"
 
+#define DEFAULT_FTP_PORT   21
+#define DEFAULT_HTTP_PORT  80
+
 char string[MAX_STRING];
 
 /* Convert an URL to a conn_t structure                 */
@@ -43,11 +46,11 @@ int conn_set(conn_t *conn, char *set_url)
     }
     else
     {
-        if(set_url[0] == 'f')
+        if(strstr(set_url, "ftp://"))
         {
             conn->proto = PROTO_FTP;
         }
-        else if(set_url[0] == 'h')
+        else if(strstr(set_url, "http://"))
         {
             conn->proto = PROTO_HTTP;
         }
@@ -57,10 +60,11 @@ int conn_set(conn_t *conn, char *set_url)
             return(0);
         }
 
+        /* copy from 3rd letter after :// */
         strncpy(url, i + 3, MAX_STRING);
     }
 
-    /* Split                            */
+    /* Split */
     if((i = strchr(url, '/')) == NULL)
     {
         strcpy(conn->dir, "/");
@@ -77,16 +81,19 @@ int conn_set(conn_t *conn, char *set_url)
     strncpy(conn->host, url, MAX_STRING);
     j = strchr(conn->dir, '?');
 
+    /* cut off CGI parameter temproray */
     if(j != NULL)
         *j = 0;
 
+    /* cut off conn->dir at last slash */
     i = strrchr(conn->dir, '/');
     *i = 0;
 
+    /* is it meaningful to put bach this ? */
     if(j != NULL)
         *j = '?';
 
-    if(i == NULL)
+    if(i == NULL) /* impossible ?!, already put a slash in conn->dir */
     {
         strncpy(conn->file, conn->dir, MAX_STRING);
         strcpy(conn->dir, "/");
@@ -122,14 +129,14 @@ int conn_set(conn_t *conn, char *set_url)
         }
     }
 
-    /* Password?                            */
+    /* Password                             */
     if((i = strchr(conn->user, ':')) != NULL)
     {
         *i = 0;
         strncpy(conn->pass, i + 1, MAX_STRING);
     }
 
-    /* Port number?                         */
+    /* Port number                          */
     if((i = strchr(conn->host, ':')) != NULL)
     {
         *i = 0;
@@ -151,9 +158,9 @@ int conn_set(conn_t *conn, char *set_url)
         else
 #endif
             if(conn->proto == PROTO_HTTP)
-                conn->port = 80;
+                conn->port = DEFAULT_HTTP_PORT;
             else
-                conn->port = 21;
+                conn->port = DEFAULT_FTP_PORT;
     }
 
     AXGET_FUN_LEAVE
@@ -187,12 +194,12 @@ char *conn_url(conn_t *conn)
     return(string);
 }
 
-/* Simple...                                */
+/* disconnect the network connection               */
 void conn_disconnect(conn_t *conn)
 {
     AXGET_FUN_BEGIN
 
-    if(conn->proto == PROTO_FTP && !conn->proxy)
+    if(conn->proto == PROTO_FTP && !conn->proxy) /* why except proxy ? */
         ftp_disconnect(conn->ftp);
     else
         http_disconnect(conn->http);

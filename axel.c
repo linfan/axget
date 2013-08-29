@@ -60,19 +60,20 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
             axel->conf->buffer_size = axel->conf->max_speed;
         }
 
-        axel->delay_time = (int)((float) 1000000 / axel->conf->max_speed * axel->conf->buffer_size * axel->conf->num_connections);
+        axel->delay_time = (int)((float) 1000000 / axel->conf->max_speed 
+                * axel->conf->buffer_size * axel->conf->num_connections);
     }
 
     if(buffer == NULL)
         buffer = malloc(max(MAX_STRING, axel->conf->buffer_size));
 
-    if(count == 0)
+    if(count == 0) /* only one URL */
     {
         axel->url = malloc(sizeof(url_t));
         axel->url->next = axel->url;
         strncpy(axel->url->text, (char *) url, MAX_STRING);
     }
-    else
+    else /* many URLs */
     {
         res = (search_t *) url;
         u = axel->url = malloc(sizeof(url_t));
@@ -95,7 +96,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 
     axel->conn[0].conf = axel->conf;
 
-    if(!conn_set(&axel->conn[0], axel->url->text))
+    if(!conn_set(&axel->conn[0], axel->url->text)) /* try connect to server */
     {
         axel_message(axel, _("Could not parse URL.\n"));
         axel->ready = -1;
@@ -115,7 +116,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     if((s = strchr(axel->filename, '?')) != NULL && axel->conf->strip_cgi_parameters)
         *s = 0;     /* Get rid of CGI parameters        */
 
-    if(!conn_init(&axel->conn[0]))
+    if(!conn_init(&axel->conn[0])) /* initialize conn_t content */
     {
         axel_message(axel, axel->conn[0].message);
         axel->ready = -1;
@@ -136,6 +137,9 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     }
 
     s = conn_url(axel->conn);
+    if (axel->conf->verbose)
+        fprintf(stderr, "Full URL: %s\n", s);
+
     strncpy(axel->url->text, s, MAX_STRING);
 
     if((axel->size = axel->conn[0].size) != INT_MAX)

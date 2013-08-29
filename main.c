@@ -67,13 +67,13 @@ static char string[MAX_STRING];
 
 int main(int argc, char *argv[])
 {
-    char fn[MAX_STRING] = "";
+    char fn[MAX_STRING] = ""; /* target file name */
+    char *url; /* source url */
     int do_search = 0;
     search_t *search;
     conf_t conf[1];
     axel_t *axel;
     int i, j, cur_head = 0;
-    char *s;
 
     AXGET_MAIN_BEGIN
 
@@ -212,11 +212,11 @@ int main(int argc, char *argv[])
         AXGET_MAIN_LEAVE
         return(1);
     }
-    else if(strcmp(argv[optind], "-") == 0)
+    else if(strcmp(argv[optind], "-") == 0) /* read url from stand input */
     {
-        s = malloc(MAX_STRING);
+        url = malloc(MAX_STRING);
 
-        if(scanf("%1024[^\n]s", s) != 1)
+        if(scanf("%1024[^\n]s", url) != 1)
         {
             fprintf(stderr, _("Error when trying to read URL (Too long?).\n"));
 
@@ -224,11 +224,11 @@ int main(int argc, char *argv[])
             return(1);
         }
     }
-    else
+    else /* get url from parameter */
     {
-        s = argv[optind];
+        url = argv[optind];
 
-        if(strlen(s) > MAX_STRING)
+        if(strlen(url) > MAX_STRING)
         {
             fprintf(stderr, _("Can't handle URLs of length over %d\n"), MAX_STRING);
 
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf(_("Initializing download: %s\n"), s);
+    printf(_("Initializing download: %s\n"), url);
 
     if(do_search)
     {
@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
         if(conf->verbose)
             printf(_("Doing search...\n"));
 
-        i = search_makelist(search, s);
+        i = search_makelist(search, url);
 
         if(i < 0)
         {
@@ -288,9 +288,9 @@ int main(int argc, char *argv[])
             return(1);
         }
     }
-    else if(argc - optind == 1)
+    else if(argc - optind == 1) /* only one URL */
     {
-        axel = axel_new(conf, 0, s);
+        axel = axel_new(conf, 0, url);
 
         if(axel->ready == -1)
         {
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
             return(1);
         }
     }
-    else
+    else /* many URLs */
     {
         search = malloc(sizeof(search_t) * (argc - optind));
         memset(search, 0, sizeof(search_t) * (argc - optind));
@@ -324,9 +324,10 @@ int main(int argc, char *argv[])
 
     print_messages(axel);
 
-    if(s != argv[optind])
+    /* if url not get from parameter, free the alloc by us */
+    if(url != argv[optind])
     {
-        free(s);
+        free(url);
     }
 
     if(*fn)
@@ -375,8 +376,10 @@ int main(int argc, char *argv[])
     else
     {
         /* Local file existence check                   */
+
+        /* point to the end */
+        char* file_name_postfix = axel->filename + strlen(axel->filename);
         i = 0;
-        s = axel->filename + strlen(axel->filename);
 
         while(1)
         {
@@ -396,10 +399,11 @@ int main(int argc, char *argv[])
                     break;
             }
 
-            sprintf(s, ".%i", i);
-            i ++;
+            sprintf(file_name_postfix, ".%i", i);
+            i++;
         }
     }
+    fprintf(stderr, _("Save file to : %s\n"), axel->filename);
 
     if(!axel_open(axel))
     {
