@@ -67,10 +67,12 @@ int conn_set(conn_t *conn, const char *set_url)
     /* Split */
     if((i = strchr(url, '/')) == NULL)
     {
+        /* if not '/' found, set the dir to root path */
         strcpy(conn->dir, "/");
     }
     else
     {
+        /* set dir to full path including file name */
         *i = 0;
         snprintf(conn->dir, MAX_STRING, "/%s", i + 1);
 
@@ -79,27 +81,29 @@ int conn_set(conn_t *conn, const char *set_url)
     }
 
     strncpy(conn->host, url, MAX_STRING);
-    j = strchr(conn->dir, '?');
 
     /* cut off CGI parameter temproray */
+    j = strchr(conn->dir, '?');
     if(j != NULL)
         *j = 0;
 
     /* cut off conn->dir at last slash */
-    i = strrchr(conn->dir, '/');
+    i = strrchr(conn->dir, '/'); /* i must not NULL */
     *i = 0;
 
-    /* is it meaningful to put bach this ? */
-    if(j != NULL)
-        *j = '?';
+    /* it's no meaningful to put question mark back ! */
+    /*if(j != NULL)
+        *j = '?';*/
 
-    if(i == NULL) /* impossible ?!, already put a slash in conn->dir */
+    if(i == NULL)
     {
+        /* only site address, no file path is included in url */
         strncpy(conn->file, conn->dir, MAX_STRING);
         strcpy(conn->dir, "/");
     }
     else
     {
+        /* url include both site address and file path */
         strncpy(conn->file, i + 1, MAX_STRING);
         strcat(conn->dir, "/");
     }
