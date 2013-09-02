@@ -59,6 +59,10 @@ unittest: $(OBJS)
 	mv $(LIBOUTFILE) unittest/lib/
 	$(MAKE) -C unittest
 
+# build and run unit testcase
+ut: unittest
+	cd unittest; ./axget_test
+
 install-bin:
 	mkdir -p $(DESTDIR)$(BINDIR)/
 	cp $(OUTFILE) $(DESTDIR)$(BINDIR)/$(OUTFILE)
