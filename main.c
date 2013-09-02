@@ -330,6 +330,7 @@ int main(int argc, char *argv[])
         free(url);
     }
 
+    /* if specified target file name */
     if(*fn)
     {
         struct stat buf;

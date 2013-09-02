@@ -185,6 +185,8 @@ char *conn_url(conn_t *conn)
         strcpy(string, "http://");
     }
 
+    /* if user name not empty and not anonymous */
+    /* why also ignore "anonymous" here ? */
     if(*conn->user != 0 && strcmp(conn->user, "anonymous") != 0)
     {
         sprintf(string + strlen(string), "%s:%s@", 
@@ -215,7 +217,8 @@ void conn_disconnect(conn_t *conn)
 
 int conn_init(conn_t *conn)
 {
-    char *proxy = conn->conf->http_proxy, *host = conn->conf->no_proxy;
+    char *proxy = conn->conf->http_proxy;
+    char *host;
     int i;
 
     AXGET_FUN_BEGIN
@@ -226,17 +229,25 @@ int conn_init(conn_t *conn)
     }
     else if(*conn->conf->no_proxy != 0)
     {
+        host = conn->conf->no_proxy;
+        /* if host is in no_proxy list, do no use proxy */
         for(i = 0; ; i ++)
+        {
+            /* search for next item begin position */
             if(conn->conf->no_proxy[i] == 0)
             {
                 if(strstr(conn->host, host) != NULL)
+                {
                     proxy = NULL;
+                    break;
+                }
 
                 host = &conn->conf->no_proxy[i+1];
 
                 if(conn->conf->no_proxy[i+1] == 0)
                     break;
             }
+        }
     }
 
     conn->proxy = proxy != NULL;
@@ -248,6 +259,7 @@ int conn_init(conn_t *conn)
 
         if(!ftp_connect(conn->ftp, conn->host, conn->port, conn->user, conn->pass))
         {
+            fprintf(stderr, "Error: FTP connecting failed !");
             conn->message = conn->ftp->message;
             conn_disconnect(conn);
 
@@ -256,9 +268,11 @@ int conn_init(conn_t *conn)
         }
 
         conn->message = conn->ftp->message;
+        /* conn->fd = conn->http->fd;  <-- should have this line here ? */
 
         if(!ftp_cwd(conn->ftp, conn->dir))
         {
+            fprintf(stderr, "Error: switch to folder %s failed !", conn->dir);
             conn_disconnect(conn);
 
             AXGET_FUN_LEAVE
@@ -271,6 +285,7 @@ int conn_init(conn_t *conn)
 
         if(!http_connect(conn->http, conn->proto, proxy, conn->host, conn->port, conn->user, conn->pass))
         {
+            fprintf(stderr, "Error: HTTP connecting failed !");
             conn->message = conn->http->headers;
             conn_disconnect(conn);
 
@@ -474,11 +489,13 @@ int conn_info(conn_t *conn)
 
         if(conn->http->status == 206 && conn->size >= 0)
         {
+            /* support continued download */
             conn->supported = 1;
             conn->size ++;
         }
         else if(conn->http->status == 200 || conn->http->status == 206)
         {
+            /* do not support continued download */
             conn->supported = 0;
             conn->size = INT_MAX;
         }

@@ -33,7 +33,7 @@ static void axel_divide(axel_t *axel);
 
 static char *buffer = NULL;
 
-/* Create a new axel_t structure                    */
+/* Create a new axel_t structure, and create connection to server */
 axel_t *axel_new(conf_t *conf, int count, void *url)
 {
     search_t *res;
@@ -125,9 +125,9 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
         return(axel);
     }
 
-    /* This does more than just checking the file size, it all depends
-       on the protocol used.                    */
-    if(!conn_info(&axel->conn[0]))
+    /* This does more than just checking the file size,
+     * it all depends on the protocol used.             */
+    if(!conn_info(&axel->conn[0]))   /* get file size */
     {
         axel_message(axel, axel->conn[0].message);
         axel->ready = -1;
@@ -136,19 +136,25 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
         return(axel);
     }
 
-    s = conn_url(axel->conn);
-    if (axel->conf->verbose)
-        fprintf(stderr, "Full URL: %s\n", s);
-
+    s = conn_url(axel->conn); /* get formated url */
     strncpy(axel->url->text, s, MAX_STRING);
 
-    if((axel->size = axel->conn[0].size) != INT_MAX)
+    if (axel->conf->verbose)
     {
-        if(axel->conf->verbose > 0)
+        fprintf(stderr, "Full URL: %s\n", s);
+
+        if((axel->size = axel->conn[0].size) != INT_MAX)
+        {
             axel_message(axel, _("File size: %lld bytes"), axel->size);
+        }
+        else
+        {
+            axel_message(axel, _("File size: unknown"));
+        }
     }
 
     /* Wildcards in URL --> Get complete filename           */
+    /* How it work ? */
     if(strchr(axel->filename, '*') || strchr(axel->filename, '?'))
         strncpy(axel->filename, axel->conn[0].file, MAX_STRING);
 
