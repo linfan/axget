@@ -178,9 +178,9 @@ int axel_open(axel_t *axel)
 
     /* Check whether server knows about RESTart and switch back to
        single connection download if necessary          */
-    if(!axel->conn[0].supported)
+    if(!axel->conn[0].supported) /* better "&& axel->conf->num_connections != 1" ? */
     {
-        axel_message(axel, _("Server unsupported, "
+        axel_message(axel, _("Server unsupported multi-connection download, "
                              "starting from scratch with one connection."));
         axel->conf->num_connections = 1;
         axel->conn = realloc(axel->conn, sizeof(conn_t));

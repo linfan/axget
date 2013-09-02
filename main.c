@@ -337,6 +337,7 @@ int main(int argc, char *argv[])
 
         if(stat(fn, &buf) == 0)
         {
+            /* if target is a folder, append the file name */
             if(S_ISDIR(buf.st_mode))
             {
                 size_t fnlen = strlen(fn);
@@ -356,8 +357,9 @@ int main(int argc, char *argv[])
             }
         }
 
-        sprintf(string, "%s.st", fn);
+        sprintf(string, "%s.st", fn); /* status file */
 
+        /* target file found, but no status file associatived found */
         if(access(fn, F_OK) == 0 && access(string, F_OK) != 0)
         {
             fprintf(stderr, _("No state file, cannot resume!\n"));
@@ -366,17 +368,20 @@ int main(int argc, char *argv[])
             return(1);
         }
 
+        /* status file found, but target file not exist */
         if(access(string, F_OK) == 0 && access(fn, F_OK) != 0)
         {
             printf(_("State file found, but no downloaded data. Starting from scratch.\n"));
             unlink(string);
         }
 
+        /* store target file name read from command line to axel->filename */
         strcpy(axel->filename, fn);
     }
+    /* no target file name specified, use original name of the downloaded file */
     else
     {
-        /* Local file existence check                   */
+        /* local file existence checking                   */
 
         /* point to the end */
         char* file_name_postfix = axel->filename + strlen(axel->filename);
@@ -406,7 +411,7 @@ int main(int argc, char *argv[])
     }
     fprintf(stderr, _("Save file to : %s\n"), axel->filename);
 
-    if(!axel_open(axel))
+    if(!axel_open(axel)) /* open local file to write */
     {
         print_messages(axel);
 

@@ -489,13 +489,13 @@ int conn_info(conn_t *conn)
 
         if(conn->http->status == 206 && conn->size >= 0)
         {
-            /* support continued download */
+            /* support section download */
             conn->supported = 1;
             conn->size ++;
         }
         else if(conn->http->status == 200 || conn->http->status == 206)
         {
-            /* do not support continued download */
+            /* do not support section download */
             conn->supported = 0;
             conn->size = INT_MAX;
         }
