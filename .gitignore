@@ -20,5 +20,6 @@ axget
 # Generated files
 config.H
 Makefile.settings
+tags
 *.trc
 *.mo

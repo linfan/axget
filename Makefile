@@ -76,6 +76,8 @@ tar:
 	gzip --best < "axel-$${version}.tar" > "axel-$${version}.tar.gz" && \
 	bzip2 --best < "axel-$${version}.tar" > "axel-$${version}.tar.bz2"
 
+ctags:
+	ctags --languages=c --fields=+SKz --sort=foldcase *.c
 
 ### I18N FILES
 
