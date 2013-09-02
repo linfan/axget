@@ -96,7 +96,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
 
     axel->conn[0].conf = axel->conf;
 
-    if(!conn_set(&axel->conn[0], axel->url->text)) /* try connect to server */
+    if(!conn_set(&axel->conn[0], axel->url->text)) /* initialize conn_t content */
     {
         axel_message(axel, _("Could not parse URL.\n"));
         axel->ready = -1;
@@ -116,7 +116,7 @@ axel_t *axel_new(conf_t *conf, int count, void *url)
     if((s = strchr(axel->filename, '?')) != NULL && axel->conf->strip_cgi_parameters)
         *s = 0;     /* Get rid of CGI parameters        */
 
-    if(!conn_init(&axel->conn[0])) /* initialize conn_t content */
+    if(!conn_init(&axel->conn[0]))  /* try connect to server */
     {
         axel_message(axel, axel->conn[0].message);
         axel->ready = -1;
