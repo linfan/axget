@@ -11,9 +11,11 @@ OBJS = TestConn.o TestMain.o
 
 all: $(OBJS)
 	gcc -o axget_test -Llib -lcheck -laxget -Wl,-rpath,lib/ $^
+	./axget_test
 
 %.o: %.c
-	gcc -c -I.. -Iinclude $<
+	gcc -c -I../src -Iinclude $<
 
 clean:
 	rm -f axget_test *.o
+

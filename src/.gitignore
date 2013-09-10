@@ -23,3 +23,7 @@ Makefile.settings
 tags
 *.trc
 *.mo
+
+# Reference file
+*.x
+

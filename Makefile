@@ -9,58 +9,37 @@
 
 -include Makefile.settings
 
-all: $(OUTFILE)
+all:
+	$(MAKE) all -C src
 ifdef I18N
 	$(MAKE) all -C i18n
 endif
 
 install: install-bin
+	$(MAKE) install -C src
 	$(MAKE) install -C share
 ifdef I18N
 	$(MAKE) install -C i18n
 endif
 
 uninstall: uninstall-bin
+	$(MAKE) uninstall -C src
 	$(MAKE) uninstall -C share
 ifdef I18N
 	$(MAKE) uninstall -C i18n
 endif
 
 clean:
-	rm -f *.o $(OUTFILE) search core
-	$(MAKE) clean -C unittest
+	$(MAKE) clean -C src
 	$(MAKE) clean -C i18n
+	$(MAKE) clean -C unittest
 
 distclean: clean
-	rm -f Makefile.settings config.H axget-*.tar axget-*.tar.gz axget-*.tar.bz2
+	rm -f Makefile.settings src/config.H axget-*.tar axget-*.tar.gz axget-*.tar.bz2
 
-### MAIN PROGRAM
-
-OBJS = axel.o conf.o conn.o ftp.o http.o search.o tcp.o
-
-$(OUTFILE): $(OBJS) main.o
-	$(CC) $^ -o $(OUTFILE) $(LFLAGS)
-	$(STRIP) $(OUTFILE)
-
-.c.o:
-	$(CC) -c $*.c -o $*.o $(CFLAGS) -fPIC
-
-LIBOUTFILE = lib$(OUTFILE).so
-
-unittest: $(OBJS)
-	$(CC) $^ --share -o $(LIBOUTFILE) $(LFLAGS)
-	mv $(LIBOUTFILE) unittest/lib/
+ut:
+	$(MAKE) unittest -C src
 	$(MAKE) -C unittest
-
-ut: unittest  # build and run unit testcase
-	cd unittest; ./axget_test
-
-install-bin:
-	mkdir -p $(DESTDIR)$(BINDIR)/
-	cp $(OUTFILE) $(DESTDIR)$(BINDIR)/$(OUTFILE)
-
-uninstall-bin:
-	rm -f $(BINDIR)/$(OUTFILE)
 
 tar:
 	version=`sed -n 's/#define AXEL_VERSION_STRING[ \t]*"\([^"]*\)"/\1/p' < axel.h` && \
@@ -68,6 +47,6 @@ tar:
 	gzip --best < "axget-$${version}.tar" > "axget-$${version}.tar.gz" && \
 	bzip2 --best < "axget-$${version}.tar" > "axget-$${version}.tar.bz2"
 
-ctags:
-	ctags --languages=c --fields=+SKz --sort=foldcase *.c
+tags:
+	$(MAKE) tags -C src
 
