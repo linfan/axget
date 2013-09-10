@@ -168,7 +168,12 @@ int conf_init(conf_t *conf)
     else if((s2 = getenv("HTTP_PROXY")) != NULL)
         strncpy(conf->http_proxy, s2, MAX_STRING);
 
-    if(!conf_loadfile(conf, ETCDIR "/axelrc"))
+    if((s2 = getenv("https_proxy")) != NULL)
+        strncpy(conf->https_proxy, s2, MAX_STRING);
+    else if((s2 = getenv("HTTPS_PROXY")) != NULL)
+        strncpy(conf->https_proxy, s2, MAX_STRING);
+
+    if(!conf_loadfile(conf, ETCDIR "/axgetrc"))
     {
         AXGET_FUN_LEAVE
         return(0);
@@ -176,7 +181,7 @@ int conf_init(conf_t *conf)
 
     if((s2 = getenv("HOME")) != NULL)
     {
-        sprintf(s, "%s/%s", s2, ".axelrc");
+        sprintf(s, "%s/%s", s2, ".axgetrc");
 
         if(!conf_loadfile(conf, s))
         {

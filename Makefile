@@ -64,7 +64,7 @@ uninstall-bin:
 
 tar:
 	version=`sed -n 's/#define AXEL_VERSION_STRING[ \t]*"\([^"]*\)"/\1/p' < axel.h` && \
-	tar --create --numeric-owner --owner 0 --group 0 --transform "s#^#axget-$${version}/#" "--file=axget-$${version}.tar" --exclude-vcs -- src i18n share configure Makefile axelrc.example README.md && \
+	tar --create --numeric-owner --owner 0 --group 0 --file=axget-$${version}.tar -- src i18n share configure Makefile README.md && \
 	gzip --best < "axget-$${version}.tar" > "axget-$${version}.tar.gz" && \
 	bzip2 --best < "axget-$${version}.tar" > "axget-$${version}.tar.bz2"
 

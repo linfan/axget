@@ -24,8 +24,8 @@ uninstall-man:
 
 install-etc:
 	mkdir -p $(DESTDIR)$(ETCDIR)/
-	cp etc/axelrc.example $(DESTDIR)$(ETCDIR)/axelrc
+	cp etc/axgetrc.example $(DESTDIR)$(ETCDIR)/axgetrc
 
 uninstall-etc:
-	rm -f $(ETCDIR)/axelrc
+	rm -f $(ETCDIR)/axgetrc
 
