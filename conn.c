@@ -54,6 +54,10 @@ int conn_set(conn_t *conn, const char *set_url)
         {
             conn->proto = PROTO_HTTP;
         }
+        else if(strstr(set_url, "https://"))
+        {
+            conn->proto = PROTO_HTTPS; /* To be implement */
+        }
         else
         {
             AXGET_FUN_LEAVE
@@ -85,7 +89,10 @@ int conn_set(conn_t *conn, const char *set_url)
     /* cut off CGI parameter temproray */
     j = strchr(conn->dir, '?');
     if(j != NULL)
+    {
+        strncpy(conn->args, j, MAX_STRING);
         *j = 0;
+    }
 
     /* cut off conn->dir at last slash */
     i = strrchr(conn->dir, '/'); /* i must not NULL */
@@ -193,8 +200,8 @@ char *conn_url(conn_t *conn)
                 conn->user, conn->pass);
     }
 
-    sprintf(string + strlen(string), "%s:%i%s%s",
-            conn->host, conn->port, conn->dir, conn->file);
+    sprintf(string + strlen(string), "%s:%i%s%s%s",
+            conn->host, conn->port, conn->dir, conn->file, conn->args);
 
     AXGET_FUN_LEAVE
     return(string);
@@ -473,7 +480,7 @@ int conn_info(conn_t *conn)
             }
 
             conn_set(conn, s);
-            i ++;
+            i++;
         }
         while(conn->http->status / 100 == 3 && i < MAX_REDIR);
 

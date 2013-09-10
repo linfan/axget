@@ -25,6 +25,7 @@
 
 #define PROTO_FTP   1
 #define PROTO_HTTP  2
+#define PROTO_HTTPS 3
 #define PROTO_DEFAULT   PROTO_HTTP
 
 typedef struct
@@ -39,6 +40,7 @@ typedef struct
     char file[MAX_STRING];
     char user[MAX_STRING];
     char pass[MAX_STRING];
+    char args[MAX_STRING];
 
     ftp_t ftp[1];
     http_t http[1];
