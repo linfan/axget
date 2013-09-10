@@ -4,5 +4,6 @@
 #include "common.h"
 
 DECLEAR_TEST(test_conn_set)
+DECLEAR_TEST(test_conn_url)
 
 #endif

@@ -38,6 +38,8 @@ int conn_set(conn_t *conn, const char *set_url)
 
     AXGET_FUN_BEGIN
 
+    memset(conn, 0, sizeof(conn_t));
+
     /* protocol://                          */
     if((i = strstr(set_url, "://")) == NULL)
     {
@@ -179,7 +181,7 @@ int conn_set(conn_t *conn, const char *set_url)
 }
 
 /* Generate a nice URL string.                      */
-char *conn_url(conn_t *conn)
+char *conn_url(const conn_t *conn)
 {
     AXGET_FUN_BEGIN
 

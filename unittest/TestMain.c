@@ -11,6 +11,7 @@ Suite * axget_suite(void)
 
     TCase *tc_conn = tcase_create ("TextConn");
     tcase_add_test (tc_conn, test_conn_set);
+    tcase_add_test (tc_conn, test_conn_url);
     suite_add_tcase (suite, tc_conn);
 
     return suite;
