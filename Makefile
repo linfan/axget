@@ -1,29 +1,34 @@
-###########################
-##   Makefile for Axel   ##
-##                       ##
-## Copyright 2001 Lintux ##
-###########################
+################################
+##      Makefile for Axget    ##
+##                            ##
+## Copyright 2001-2012 Lintux ##
+## Copyright 2013      Freyr  ##
+################################
 
 ### DEFINITIONS
 
 -include Makefile.settings
-
-.SUFFIXES: .po .mo
-
-# Add your translation here..
-MOFILES = nl.mo de.mo ru.mo zh_CN.mo
-
 
 all: $(OUTFILE)
 install: install-bin install-etc install-man
 uninstall: uninstall-bin uninstall-etc uninstall-man
 
 clean:
-	rm -f *.mo *.o $(OUTFILE) search core
+	rm -f *.o $(OUTFILE) search core
 	$(MAKE) clean -C unittest
+	$(MAKE) clean -C i18n
+
+ifdef I18N
+all:
+	$(MAKE) all -C i18n
+install:
+	$(MAKE) install -C i18n
+uninstall:
+	$(MAKE) uninstall -C i18n
+endif
 
 distclean: clean
-	rm -f Makefile.settings config.H axel-*.tar axel-*.tar.gz axel-*.tar.bz2
+	rm -f Makefile.settings config.H axget-*.tar axget-*.tar.gz axget-*.tar.bz2
 
 install-man:
 	mkdir -p $(DESTDIR)$(MANDIR)/man1/
@@ -72,36 +77,10 @@ uninstall-bin:
 
 tar:
 	version=`sed -n 's/#define AXEL_VERSION_STRING[ \t]*"\([^"]*\)"/\1/p' < axel.h` && \
-	tar --create --numeric-owner --owner 0 --group 0 --transform "s#^#axel-$${version}/#" "--file=axel-$${version}.tar" --exclude-vcs -- *.c *.h *.po *.1 configure Makefile axelrc.example README.md && \
-	gzip --best < "axel-$${version}.tar" > "axel-$${version}.tar.gz" && \
-	bzip2 --best < "axel-$${version}.tar" > "axel-$${version}.tar.bz2"
+	tar --create --numeric-owner --owner 0 --group 0 --transform "s#^#axget-$${version}/#" "--file=axget-$${version}.tar" --exclude-vcs -- src i18n share configure Makefile axelrc.example README.md && \
+	gzip --best < "axget-$${version}.tar" > "axget-$${version}.tar.gz" && \
+	bzip2 --best < "axget-$${version}.tar" > "axget-$${version}.tar.bz2"
 
 ctags:
 	ctags --languages=c --fields=+SKz --sort=foldcase *.c
 
-### I18N FILES
-
-%.po:
-	-@mv $@ $@.bak
-	xgettext -k_ -o$@ *.[ch]
-	@if [ -e $@.bak ]; then \
-		echo -n Merging files...; \
-		msgmerge -vo $@.combo $@.bak $@; \
-		rm -f $@ $@.bak; \
-		mv $@.combo $@; \
-	fi
-
-.po.mo: $@.po
-	msgfmt -vo $@ $*.po
-
-i18n-mofiles: $(MOFILES)
-
-install-i18n:
-	@echo Installing locale files...
-	@for i in $(MOFILES); do \
-		mkdir -p $(DESTDIR)$(LOCALE)/`echo $$i | cut -d. -f1`/LC_MESSAGES/; \
-		cp $$i $(DESTDIR)$(LOCALE)/`echo $$i | cut -d. -f1`/LC_MESSAGES/axel.mo; \
-	done
-
-uninstall-i18n:
-	cd $(LOCALE); find . -name axel.mo -exec 'rm' '{}' ';'

@@ -1,3 +1,10 @@
+################################
+##      Makefile for Axget    ##
+##                            ##
+## Copyright 2001-2012 Lintux ##
+## Copyright 2013      Freyr  ##
+################################
+
 # Using unit test framework check (http://check.sourceforge.net)
 
 OBJS = TestConn.o TestMain.o

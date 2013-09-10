@@ -1,10 +1,11 @@
 #!/bin/sh
 
-###########################
-##  Configurer for Axel  ##
-##                       ##
-## Copyright 2001 Lintux ##
-###########################
+################################
+##     Configure for Axget    ##
+##                            ##
+## Copyright 2001-2012 Lintux ##
+## Copyright 2013      Freyr  ##
+################################
 
 prefix='/usr/local'
 bindir='$prefix/bin'
@@ -110,10 +111,6 @@ fi
 
 AXEL_LFLAGS=${LFLAGS}
 if [ "$i18n" = "1" ]; then
-    echo "all: i18n-mofiles" >> Makefile.settings
-    echo "install: install-i18n" >> Makefile.settings
-    echo "uninstall: uninstall-i18n" >> Makefile.settings
-
     echo 'I18N=1' >> Makefile.settings
     echo '#define I18N' >> config.H
     if [ -f /usr/local/include/libintl.h ]; then
