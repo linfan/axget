@@ -1,0 +1,25 @@
+# Object files
+*.o
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+axget
+*.exe
+*.out
+*.app
+
+# Generated files
+config.H
+Makefile.settings
+tags
+*.trc
+*.mo

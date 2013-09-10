@@ -7,6 +7,8 @@
 
 ### DEFINITIONS
 
+-include ../Makefile.settings
+
 .SUFFIXES: .po .mo
 
 # Add your translation here..
