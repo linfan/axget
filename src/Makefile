@@ -14,21 +14,24 @@ OBJDIR = obj
 all: prepare $(OUTFILE)
 
 prepare:
+ifneq ($(OBJDIR), $(wildcard $(OBJDIR)))
 	mkdir -p "$(OBJDIR)"
+endif
 
 clean:
-	rm -fr *.o $(OUTFILE) $(OBJDIR) search core
+	rm -fr $(OUTFILE) $(OBJDIR) *.core
 
 ### MAIN PROGRAM
 
 OBJS = axel.o conf.o conn.o ftp.o http.o search.o tcp.o
 
-$(OUTFILE): $(OBJS) main.o
+OBJFILES = $(OBJS:%=$(OBJDIR)/%)
+$(OUTFILE): $(OBJFILES) $(OBJDIR)/main.o
 	$(CC) $^ -o $(OUTFILE) $(LFLAGS)
 	$(STRIP) $(OUTFILE)
 
-.c.o:
-	$(CC) -c $*.c -o $*.o $(CFLAGS) -fPIC
+$(OBJDIR)/%.o: %.c
+	$(CC) -c $*.c -o $(OBJDIR)/$*.o $(CFLAGS) -fPIC
 
 LIBOUTFILE = lib$(OUTFILE).so
 
