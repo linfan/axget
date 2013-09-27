@@ -23,6 +23,8 @@ Makefile.settings
 tags
 *.trc
 *.mo
+core.*
+cscope.*
 
 # Reference file
 *.x

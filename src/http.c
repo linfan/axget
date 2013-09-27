@@ -171,8 +171,7 @@ int http_exec(http_t *conn)
     write(conn->fd, conn->request, strlen(conn->request));
     *conn->headers = 0;
 
-    /* Read the headers byte by byte to make sure we don't touch the
-       actual data                          */
+    /* Read the headers byte by byte to make sure we don't touch the actual data */
     while(1)
     {
         if(read(conn->fd, s, 1) <= 0)

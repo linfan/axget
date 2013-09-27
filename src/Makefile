@@ -19,7 +19,7 @@ ifneq ($(OBJDIR), $(wildcard $(OBJDIR)))
 endif
 
 clean:
-	rm -fr $(OUTFILE) $(OBJDIR) *.core
+	rm -fr $(OUTFILE) $(OBJDIR) core.*
 
 ### MAIN PROGRAM
 

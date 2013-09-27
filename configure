@@ -19,8 +19,8 @@ debug=0
 trace=1
 strip=0
 with_openssl=1
-openssl_inc='/usr/local/include'
-openssl_lib='/usr/local/lib'
+openssl_inc='/usr/include'
+openssl_lib='/usr/lib'
 
 arch=`uname -s`
 config_H='src/config.H'
@@ -280,4 +280,9 @@ if [ "$strip" = "1" ]; then
     echo '  Binary stripping enabled.';
 else
     echo '  Binary stripping disabled.';
+fi
+if [ "$with_openssl" = "1" ]; then
+    echo '  HTTPS support enabled.';
+else
+    echo '  HTTPS support disabled.';
 fi
