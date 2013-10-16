@@ -135,13 +135,13 @@ fi
 if [ "$with_openssl" = "1" ]; then
     echo 'WITH_OPENSSL=1' >> Makefile.settings
     echo '#define WITH_OPENSSL' >> ${config_H}
-    if [[ -f ${openssl_inc}/openssl/ssl.h ]]; then
+    if [ -f ${openssl_inc}/openssl/ssl.h ]; then
         AXEL_CFLAGS="${AXEL_CFLAGS} -I${openssl_inc}"
     else
         echo "[ERROR] openssl/ssl.h no found under ${openssl_inc} !"
         exit -1
     fi
-    if [[ -f ${openssl_lib}/libssl.so ]]; then
+    if [ -f ${openssl_lib}/libssl.so ]; then
         AXEL_LFLAGS="${AXEL_LFLAGS} -L${openssl_lib}"
     else
         echo "[ERROR] libssl.so no found under ${openssl_lib} !"
@@ -153,7 +153,7 @@ if [ "${CC}" != "" ]; then
     echo "CC=${CC}" >> Makefile.settings;
 elif type gcc > /dev/null 2> /dev/null; then
     echo "CC=gcc" >> Makefile.settings;
-    AXEL_CFLAGS="${AXEL_CFLAGS} -Wall"
+    AXEL_CFLAGS="${AXEL_CFLAGS} -Wall" # -Wno-unused-result
 elif type cc > /dev/null 2> /dev/null; then
     echo "CC=cc" >> Makefile.settings;
 else
