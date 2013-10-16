@@ -23,6 +23,9 @@
   Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _CONF_H_
+#define _CONF_H_
+
 typedef struct
 {
     char default_filename[MAX_STRING];
@@ -54,3 +57,5 @@ typedef struct
 
 int conf_loadfile(conf_t *conf, char *file);
 int conf_init(conf_t *conf);
+
+#endif // _CONF_H_

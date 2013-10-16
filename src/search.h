@@ -23,6 +23,9 @@
   Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _SEARCH_H_
+#define _SEARCH_H_
+
 typedef struct
 {
     char url[MAX_STRING];
@@ -35,3 +38,5 @@ typedef struct
 int search_makelist(search_t *results, char *url);
 int search_getspeeds(search_t *results, int count);
 void search_sortlist(search_t *results, int count);
+
+#endif // _SEARCH_H_

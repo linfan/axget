@@ -23,5 +23,10 @@
   Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _TCP_H_
+#define _TCP_H_
+
 int tcp_connect(char *hostname, int port, char *local_if);
 int get_if_ip(char *iface, char *ip);
+
+#endif // _TCP_H_

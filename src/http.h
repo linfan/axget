@@ -23,6 +23,9 @@
   Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _HTTP_H_
+#define _HTTP_H_
+
 #define MAX_QUERY   2048        /* Should not grow larger.. */
 
 typedef struct
@@ -49,3 +52,6 @@ char *http_header(http_t *conn, char *header);
 long long int http_size(http_t *conn);
 void http_encode(char *s);
 void http_decode(char *s);
+
+#endif // _HTTP_H_
+

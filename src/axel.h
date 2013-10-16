@@ -23,6 +23,9 @@
   Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _AXEL_H_
+#define _AXEL_H_
+
 #include "config.H"
 
 #include <time.h>
@@ -85,6 +88,7 @@ typedef message_t if_t;
 #include "http.h"
 #include "conn.h"
 #include "search.h"
+#include "utility.h"
 
 #define RET_OK  0
 #define RET_ERR -1
@@ -101,7 +105,10 @@ extern FILE *axget_trace;
 #define AXGET_MAIN_BEGIN \
     axget_trace = fopen("./axget.trc", "a"); \
     if (!axget_trace) \
-    { fprintf(stderr, "Open trace file failed !"); AXGET_FUN_LEAVE; return RET_ERR; } \
+    { \
+        fprintf(stderr, "Open trace file failed !"); \
+        AXGET_FUN_LEAVE; return RET_ERR; \
+    } \
     fprintf(axget_trace, "-------- AXGET BEGIN --------\n"); \
     AXGET_FUN_BEGIN
 #define AXGET_MAIN_LEAVE \
@@ -138,3 +145,8 @@ void axel_do(axel_t *axel);
 void axel_close(axel_t *axel);
 
 double gettime();
+
+/* global variable */
+extern int verbose;
+
+#endif // _AXEL_H_

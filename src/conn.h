@@ -23,6 +23,9 @@
   Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _CONN_H_
+#define _CONN_H_
+
 #define PROTO_FTP   1
 #define PROTO_HTTP  2
 #define PROTO_HTTPS 3
@@ -65,3 +68,5 @@ int conn_init(conn_t *conn);
 int conn_setup(conn_t *conn);
 int conn_exec(conn_t *conn);
 int conn_info(conn_t *conn);
+
+#endif // _CONN_H_
