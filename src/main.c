@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     }
 
     opterr = 0;
-    j = -1;
+    verbose = conf->verbose;
 
     while(1)
     {
@@ -165,11 +165,7 @@ int main(int argc, char *argv[])
             return(0);
 
         case 'v':
-            if(j == -1)
-                j = 1;
-            else
-                j ++;
-
+            verbose++;
             break;
 
         case 'V':
@@ -180,7 +176,7 @@ int main(int argc, char *argv[])
 
         case 'q':
             close(1);
-            conf->verbose = -1;
+            verbose = -99;
 
             if(open("/dev/null", O_WRONLY) != 1)
             {
@@ -201,9 +197,6 @@ int main(int argc, char *argv[])
     }
 
     conf->add_header_count = cur_head;
-
-    if(j > -1)
-        conf->verbose = j;
 
     if(argc - optind == 0)
     {
@@ -245,8 +238,7 @@ int main(int argc, char *argv[])
         memset(search, 0, sizeof(search_t) * (conf->search_amount + 1));
         search[0].conf = conf;
 
-        if(conf->verbose)
-            printf(_("Doing search...\n"));
+        echo(WORK_LOG, _("Doing search...\n"));
 
         i = search_makelist(search, url);
 
@@ -258,23 +250,17 @@ int main(int argc, char *argv[])
             return(1);
         }
 
-        if(conf->verbose)
-            printf(_("Testing speeds, this can take a while...\n"));
+        echo(WORK_LOG, _("Testing speeds, this can take a while...\n"));
 
         j = search_getspeeds(search, i);
         search_sortlist(search, i);
 
-        if(conf->verbose)
-        {
-            printf(_("%i usable servers found, will use these URLs:\n"), j);
-            j = min(j, conf->search_top);
-            printf("%-60s %15s\n", "URL", "Speed");
-
-            for(i = 0; i < j; i ++)
-                printf("%-70.70s %5i\n", search[i].url, search[i].speed);
-
-            printf("\n");
-        }
+        echo(WORK_LOG, _("%i usable servers found, will use these URLs:\n"), j);
+        j = min(j, conf->search_top);
+        echo(WORK_LOG, "%-60s %15s\n", "URL", "Speed");
+        for(i = 0; i < j; i ++)
+            echo(WORK_LOG, "%-70.70s %5i\n", search[i].url, search[i].speed);
+        echo(WORK_LOG, "\n");
 
         axel = axel_new(conf, j, search);
         free(search);
@@ -457,7 +443,7 @@ int main(int argc, char *argv[])
             /* The infamous wget-like 'interface'.. ;)      */
             done = (axel->bytes_done / 1024) - (prev / 1024);
 
-            if(done && conf->verbose > -1)
+            if(done && verbose > 0)
             {
                 for(i = 0; i < done; i ++)
                 {

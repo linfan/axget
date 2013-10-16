@@ -151,7 +151,7 @@ int conf_init(conf_t *conf)
     conf->num_connections       = 4;
     conf->buffer_size       = 5120;
     conf->max_speed         = 0;
-    conf->verbose           = 1;
+    conf->verbose           = 0;
     conf->alternate_output      = 0;
     conf->search_timeout        = 10;
     conf->search_threads        = 3;

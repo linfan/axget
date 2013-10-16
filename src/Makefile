@@ -23,7 +23,7 @@ clean:
 
 ### MAIN PROGRAM
 
-OBJS = axel.o conf.o conn.o ftp.o http.o search.o tcp.o
+OBJS = axel.o conf.o conn.o ftp.o http.o search.o tcp.o utility.o
 
 OBJFILES = $(OBJS:%=$(OBJDIR)/%)
 $(OUTFILE): $(OBJFILES) $(OBJDIR)/main.o
