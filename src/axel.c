@@ -653,17 +653,19 @@ static void axel_divide(axel_t *axel)
 
     for(i = 1; i < axel->conf->num_connections; i ++)
     {
-#ifdef DEBUG
-        printf("Downloading %lld-%lld using conn. %i\n", axel->conn[i-1].currentbyte, axel->conn[i-1].lastbyte, i - 1);
-#endif
+        IF_DEBUG
+        {
+            printf("Downloading %lld-%lld using conn. %i\n", axel->conn[i-1].currentbyte, axel->conn[i-1].lastbyte, i - 1);
+        }
         axel->conn[i].currentbyte = axel->conn[i-1].lastbyte + 1;
         axel->conn[i].lastbyte = axel->conn[i].currentbyte + axel->size / axel->conf->num_connections;
     }
 
     axel->conn[axel->conf->num_connections-1].lastbyte = axel->size - 1;
-#ifdef DEBUG
-    printf("Downloading %lld-%lld using conn. %i\n", axel->conn[i-1].currentbyte, axel->conn[i-1].lastbyte, i - 1);
-#endif
+    IF_DEBUG
+    {
+        printf("Downloading %lld-%lld using conn. %i\n", axel->conn[i-1].currentbyte, axel->conn[i-1].lastbyte, i - 1);
+    }
 
     AXGET_FUN_LEAVE
 }

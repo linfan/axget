@@ -83,18 +83,15 @@ typedef message_t url_t;
 typedef message_t if_t;
 
 #include "conf.h"
-#include "tcp.h"
+#include "tcpip.h"
 #include "ftp.h"
 #include "http.h"
 #include "conn.h"
 #include "search.h"
 #include "utility.h"
-
-#define RET_OK  0
-#define RET_ERR -1
-
-#define min( a, b )     ( (a) < (b) ? (a) : (b) )
-#define max( a, b )     ( (a) > (b) ? (a) : (b) )
+#include "transport.h"
+#include "ssl.h"
+#include "socket.h"
 
 #ifdef GEN_TRACE_FILE
 extern FILE *axget_trace;

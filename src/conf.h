@@ -42,6 +42,27 @@ typedef struct
     int verbose;
     int alternate_output;
 
+#ifdef WITH_OPENSSL
+    enum {
+        secure_protocol_auto,
+        secure_protocol_sslv2,
+        secure_protocol_sslv3,
+        secure_protocol_tlsv1
+    } secure_protocol;        /* type of secure protocol to use. */
+    int check_cert;           /* whether to validate the server's cert */
+    char *cert_file;          /* external client certificate to use. */
+    char *private_key;        /* private key file (if not internal). */
+    enum keyfile_type {
+        keyfile_pem,
+        keyfile_asn1
+    } cert_type,              /* type of client certificate file */
+      private_key_type;       /* type of private key file */
+    char *ca_directory;       /* CA directory (hash files) */
+    char *ca_cert;            /* CA certificate file to use */
+    char *random_file;        /* file with random data to seed the PRNG */
+    char *egd_file;           /* file name of the egd daemon socket */
+#endif /* WITH_OPENSSL */
+
     if_t *interfaces;
 
     int search_timeout;

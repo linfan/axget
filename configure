@@ -257,6 +257,10 @@ CYGWIN_* )
 ;;
 esac
 
+if [ "$with_openssl" = "1" ]; then
+    AXEL_LFLAGS="${AXEL_LFLAGS} -lssl"
+fi
+
 echo "CFLAGS=${AXEL_CFLAGS}" >> Makefile.settings
 echo "LFLAGS=${AXEL_LFLAGS}" >> Makefile.settings
 

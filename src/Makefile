@@ -16,6 +16,7 @@ all: prepare $(OUTFILE)
 prepare:
 ifneq ($(OBJDIR), $(wildcard $(OBJDIR)))
 	mkdir -p "$(OBJDIR)"
+	mkdir -p "$(OBJDIR)/lib"
 endif
 
 clean:
@@ -23,7 +24,9 @@ clean:
 
 ### MAIN PROGRAM
 
-OBJS = axel.o conf.o conn.o ftp.o http.o search.o tcp.o utility.o
+SRC = $(wildcard lib/*.c) $(wildcard *.c)
+
+OBJS = $(SRC:%.c=%.o)
 
 OBJFILES = $(OBJS:%=$(OBJDIR)/%)
 $(OUTFILE): $(OBJFILES) $(OBJDIR)/main.o

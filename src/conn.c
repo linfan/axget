@@ -292,7 +292,8 @@ int conn_init(conn_t *conn)
     {
         conn->http->local_if = conn->local_if;
 
-        if(!http_connect(conn->http, conn->proto, proxy, conn->host, conn->port, conn->user, conn->pass))
+        if(http_connect(conn->http, conn->proto, proxy, 
+                conn->host, conn->port, conn->user, conn->pass) != RET_OK)
         {
             fprintf(stderr, "Error: HTTP connecting failed !");
             conn->message = conn->http->headers;

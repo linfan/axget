@@ -211,9 +211,10 @@ long long int ftp_size(ftp_t *conn, char *file, int maxredir)
         return(-1);
     }
 
-#ifdef DEBUG
-    fprintf(stderr, reply);
-#endif
+    IF_DEBUG
+    {
+        fprintf(stderr, reply);
+    }
     /* Count the number of probably legal matches: Files&Links only */
     j = 0;
 
@@ -365,9 +366,10 @@ int ftp_command(ftp_t *conn, char *format, ...)
     vsnprintf(cmd, MAX_STRING - 3, format, params);
     strcat(cmd, "\r\n");
     va_end(params);
-#ifdef DEBUG
-    fprintf(stderr, "fd(%i)<--%s", conn->fd, cmd);
-#endif
+    IF_DEBUG
+    {
+        fprintf(stderr, "fd(%i)<--%s", conn->fd, cmd);
+    }
 
     if(write(conn->fd, cmd, strlen(cmd)) != strlen(cmd))
     {
@@ -444,9 +446,10 @@ int ftp_wait(ftp_t *conn)
     }
     while(complete != 2);
 
-#ifdef DEBUG
-    fprintf(stderr, "fd(%i)-->%s", conn->fd, conn->message);
-#endif
+    IF_DEBUG
+    {
+        fprintf(stderr, "fd(%i)-->%s", conn->fd, conn->message);
+    }
 
     if((s = strchr(conn->message, '\n')) != NULL)
         *s = 0;

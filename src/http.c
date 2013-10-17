@@ -25,7 +25,8 @@
 
 #include "axel.h"
 
-int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, char *user, char *pass)
+int http_connect(http_t *conn, int proto, char *proxy, 
+        char *host, int port, char *user, char *pass)
 {
     char base64_encode[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                              "abcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -50,7 +51,7 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
                 sprintf(conn->headers, _("Invalid proxy string: %s\n"), proxy);
 
                 AXGET_FUN_LEAVE
-                return(0);
+                return(RET_ERR);
             }
 
             host = tconn->host;
@@ -69,7 +70,7 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
         sprintf(conn->headers, _("Unable to connect to server %s:%i\n"), host, port);
 
         AXGET_FUN_LEAVE
-        return(0);
+        return(RET_ERR);
     }
 
     if(*user == 0)
@@ -94,8 +95,23 @@ int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, cha
         }
     }
 
+    if (proto == PROTO_HTTP)
+    {
+        socket_connect(conn->fd);
+    }
+    else // proto == PROTO_HTTPS
+    {
+#ifdef WITH_OPENSSL
+        ssl_connect(conn->fd, host);
+#else
+        sprintf(conn->headers, _("HTTPS not support !"));
+        AXGET_FUN_LEAVE
+        return(RET_ERR);
+#endif
+    }
+
     AXGET_FUN_LEAVE
-    return(1);
+    return(RET_OK);
 }
 
 void http_disconnect(http_t *conn)
@@ -164,9 +180,10 @@ int http_exec(http_t *conn)
 
     AXGET_FUN_BEGIN
 
-#ifdef DEBUG
-    fprintf(stderr, "--- Sending request ---\n%s--- End of request ---\n", conn->request);
-#endif
+    IF_DEBUG
+    {
+        fprintf(stderr, "--- Sending request ---\n%s--- End of request ---\n", conn->request);
+    }
     http_addheader(conn, "");
     write(conn->fd, conn->request, strlen(conn->request));
     *conn->headers = 0;
@@ -202,9 +219,10 @@ int http_exec(http_t *conn)
         strncat(conn->headers, s, MAX_QUERY);
     }
 
-#ifdef DEBUG
-    fprintf(stderr, "--- Reply headers ---\n%s--- End of headers ---\n", conn->headers);
-#endif
+    IF_DEBUG
+    {
+        fprintf(stderr, "--- Reply headers ---\n%s--- End of headers ---\n", conn->headers);
+    }
     sscanf(conn->headers, "%*s %3i", &conn->status);
     s2 = strchr(conn->headers, '\n');
     *s2 = 0;

@@ -43,7 +43,8 @@ typedef struct
     char *local_if;
 } http_t;
 
-int http_connect(http_t *conn, int proto, char *proxy, char *host, int port, char *user, char *pass);
+int http_connect(http_t *conn, int proto, char *proxy,
+        char *host, int port, char *user, char *pass);
 void http_disconnect(http_t *conn);
 void http_get(http_t *conn, char *lurl);
 void http_addheader(http_t *conn, char *format, ...);

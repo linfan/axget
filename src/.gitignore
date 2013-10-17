@@ -25,6 +25,7 @@ tags
 *.mo
 core.*
 cscope.*
+*.swp
 
 # Reference file
 *.x
