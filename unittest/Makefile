@@ -14,7 +14,7 @@ all: $(OBJS)
 	./axget_test
 
 %.o: %.c
-	gcc -c -I../src -Iinclude $<
+	gcc -c -I../src -Iinclude -fPIC $<
 
 clean:
 	rm -f axget_test *.o

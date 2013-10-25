@@ -21,8 +21,7 @@ void fd_register_transport (int fd, transport_implementation *imp, void *ctx)
        hash key.  */
     assert (fd >= 0);
 
-    if (info != NULL)
-        free(info);
+    if (info) { free(info); }
     info = malloc(sizeof(transport_info));
     info->imp = imp;
     info->ctx = ctx;
@@ -128,11 +127,7 @@ const char * fd_errstr (int fd)
 void fd_close (int fd)
 {
     info->imp->closer (fd, info->ctx);
-
-    if (info)
-    { free(info); }
 }
-
 
 /* Wait for a single descriptor to become available, timing out after
  * MAXTIME seconds.  Returns 1 if FD is available, 0 for timeout and

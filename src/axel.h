@@ -93,32 +93,6 @@ typedef message_t if_t;
 #include "ssl.h"
 #include "socket.h"
 
-#ifdef GEN_TRACE_FILE
-extern FILE *axget_trace;
-#define AXGET_FUN_BEGIN fprintf(axget_trace, "%s [ENTER] %s @ %s:%d\n", \
-        __TIME__, __FUNCTION__, __FILE__, __LINE__);
-#define AXGET_FUN_LEAVE fprintf(axget_trace, "%s [LEAVE] %s @ %s:%d\n", \
-        __TIME__, __FUNCTION__, __FILE__, __LINE__);
-#define AXGET_MAIN_BEGIN \
-    axget_trace = fopen("./axget.trc", "a"); \
-    if (!axget_trace) \
-    { \
-        fprintf(stderr, "Open trace file failed !"); \
-        AXGET_FUN_LEAVE; return RET_ERR; \
-    } \
-    fprintf(axget_trace, "-------- AXGET BEGIN --------\n"); \
-    AXGET_FUN_BEGIN
-#define AXGET_MAIN_LEAVE \
-    AXGET_FUN_LEAVE \
-    fprintf(axget_trace, "-------- AXGET END --------\n"); \
-    fclose(axget_trace);
-#else
-#define AXGET_FUN_BEGIN
-#define AXGET_FUN_LEAVE
-#define AXGET_MAIN_BEGIN
-#define AXGET_MAIN_LEAVE
-#endif
-
 typedef struct
 {
     conn_t *conn;

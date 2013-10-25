@@ -119,7 +119,10 @@ void http_disconnect(http_t *conn)
     AXGET_FUN_BEGIN
 
     if(conn->fd > 0)
-        close(conn->fd);
+    {
+        //close(conn->fd);
+        fd_close(conn->fd);
+    }
 
     conn->fd = -1;
 
@@ -185,13 +188,15 @@ int http_exec(http_t *conn)
         fprintf(stderr, "--- Sending request ---\n%s--- End of request ---\n", conn->request);
     }
     http_addheader(conn, "");
-    write(conn->fd, conn->request, strlen(conn->request));
+    //write(conn->fd, conn->request, strlen(conn->request));
+    fd_write(conn->fd, conn->request, strlen(conn->request));
     *conn->headers = 0;
 
     /* Read the headers byte by byte to make sure we don't touch the actual data */
     while(1)
     {
-        if(read(conn->fd, s, 1) <= 0)
+        //if(read(conn->fd, s, 1) <= 0)
+        if(fd_read(conn->fd, s, 1) <= 0)
         {
             /* We'll put the message in conn->headers, not in request */
             sprintf(conn->headers, _("Connection gone.\n"));
