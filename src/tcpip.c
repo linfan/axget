@@ -33,25 +33,26 @@ int tcp_connect(char *hostname, int port, char *local_if)
     struct sockaddr_in addr;
     struct sockaddr_in local;
     int fd;
+
+    AXGET_FUN_BEGIN
+
     IF_DEBUG
     {
         fprintf(stderr, "tcp_connect( %s, %i ) = ", hostname, port);
     }
 
-    AXGET_FUN_BEGIN
-
-        /* Why this loop? Because the call might return an empty record.
-           At least it very rarely does, on my system...        */
-        for(fd = 0; fd < 5; fd ++)
+    /* Why this loop? Because the call might return an empty record.
+       At least it very rarely does, on my system...        */
+    for(fd = 0; fd < 5; fd ++)
+    {
+        if((host = gethostbyname(hostname)) == NULL)
         {
-            if((host = gethostbyname(hostname)) == NULL)
-            {
-                AXGET_FUN_LEAVE
-                    return(-1);
-            }
-
-            if(*host->h_name) break;
+            AXGET_FUN_LEAVE
+                return(-1);
         }
+
+        if(*host->h_name) break;
+    }
 
     if(!host || !host->h_name || !*host->h_name)
     {
@@ -157,6 +158,8 @@ static int is_valid_ipv4_address (const char *str, const char *end)
     int octets = 0;
     int val = 0;
 
+    AXGET_FUN_BEGIN
+
     while (str < end)
     {
         int ch = *str++;
@@ -166,27 +169,43 @@ static int is_valid_ipv4_address (const char *str, const char *end)
             val = val * 10 + (ch - '0');
 
             if (val > 255)
+            {
+                AXGET_FUN_LEAVE
                 return false;
+            }
             if (!saw_digit)
             {
                 if (++octets > 4)
+                {
+                    AXGET_FUN_LEAVE
                     return false;
+                }
                 saw_digit = true;
             }
         }
         else if (ch == '.' && saw_digit)
         {
             if (octets == 4)
+            {
+                AXGET_FUN_LEAVE
                 return false;
+            }
             val = 0;
             saw_digit = false;
         }
         else
+        {
+            AXGET_FUN_LEAVE
             return false;
+        }
     }
     if (octets < 4)
+    {
+        AXGET_FUN_LEAVE
         return false;
+    }
 
+    AXGET_FUN_LEAVE
     return true;
 }
 
@@ -206,18 +225,26 @@ static int is_valid_ipv6_address (const char *str, const char *end)
     bool saw_xdigit;
     unsigned int val;
 
+    AXGET_FUN_BEGIN
+
     tp = 0;
     colonp = NULL;
 
     if (str == end)
+    {
+        AXGET_FUN_LEAVE
         return false;
+    }
 
     /* Leading :: requires some special handling. */
     if (*str == ':')
     {
         ++str;
         if (str == end || *str != ':')
+        {
+            AXGET_FUN_LEAVE
             return false;
+        }
     }
 
     curtok = str;
@@ -234,7 +261,10 @@ static int is_valid_ipv6_address (const char *str, const char *end)
             val <<= 4;
             val |= XDIGIT_TO_NUM (ch);
             if (val > 0xffff)
+            {
+                AXGET_FUN_LEAVE
                 return false;
+            }
             saw_xdigit = true;
             continue;
         }
@@ -246,14 +276,23 @@ static int is_valid_ipv6_address (const char *str, const char *end)
             if (!saw_xdigit)
             {
                 if (colonp != NULL)
+                {
+                    AXGET_FUN_LEAVE
                     return false;
+                }
                 colonp = str + tp;
                 continue;
             }
             else if (str == end)
+            {
+                AXGET_FUN_LEAVE
                 return false;
+            }
             if (tp > ns_in6addrsz - ns_int16sz)
+            {
+                AXGET_FUN_LEAVE
                 return false;
+            }
             tp += ns_int16sz;
             saw_xdigit = false;
             val = 0;
@@ -269,26 +308,37 @@ static int is_valid_ipv6_address (const char *str, const char *end)
             break;
         }
 
+        AXGET_FUN_LEAVE
         return false;
     }
 
     if (saw_xdigit)
     {
         if (tp > ns_in6addrsz - ns_int16sz)
+        {
+            AXGET_FUN_LEAVE
             return false;
+        }
         tp += ns_int16sz;
     }
 
     if (colonp != NULL)
     {
         if (tp == ns_in6addrsz)
+        {
+            AXGET_FUN_LEAVE
             return false;
+        }
         tp = ns_in6addrsz;
     }
 
     if (tp != ns_in6addrsz)
+    {
+        AXGET_FUN_LEAVE
         return false;
+    }
 
+    AXGET_FUN_LEAVE
     return true;
 }
 #endif

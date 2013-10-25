@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 #include "transport.h"
 #include "socket.h"
 #include "utility.h"
@@ -21,10 +22,14 @@ void fd_register_transport (int fd, transport_implementation *imp, void *ctx)
        hash key.  */
     assert (fd >= 0);
 
+    AXGET_FUN_BEGIN
+
     if (info) { free(info); }
     info = malloc(sizeof(transport_info));
     info->imp = imp;
     info->ctx = ctx;
+
+    AXGET_FUN_LEAVE
 }
 
 /* Return context of the transport registered with
@@ -39,14 +44,20 @@ void* fd_transport_context (int fd)
 /* Wait for socket to be ready */
 int fd_poll (int fd, int wf, double timeout)
 {
+    AXGET_FUN_BEGIN
+
     if (timeout)
     {
         int test = info->imp->poller (fd, timeout, wf, info->ctx);
         if (test == 0)
             errno = ETIMEDOUT;
         if (test <= 0)
+        {
+            AXGET_FUN_RETURN_D(RET_FAIL)
             return RET_FAIL;
+        }
     }
+    AXGET_FUN_RETURN_D(RET_OK)
     return RET_OK;
 }
 
@@ -57,7 +68,9 @@ int fd_poll (int fd, int wf, double timeout)
 
 int fd_read (int fd, char *buf, int bufsize)
 {
+    AXGET_FUN_BEGIN
     return info->imp->reader (fd, buf, bufsize, info->ctx);
+    AXGET_FUN_LEAVE
 }
 
 /* Like fd_read, except it provides a "preview" of the data that will
@@ -74,7 +87,9 @@ all the peeked data will eventually be read by fd_read.  */
 
 int fd_peek (int fd, char *buf, int bufsize)
 {
+    AXGET_FUN_BEGIN
     return info->imp->peeker (fd, buf, bufsize, info->ctx);
+    AXGET_FUN_LEAVE
 }
 
 /* Write the entire contents of BUF to FD.  If TIMEOUT is non-zero,
@@ -85,6 +100,8 @@ int fd_peek (int fd, char *buf, int bufsize)
 int fd_write (int fd, char *buf, int bufsize)
 {
     int res;
+
+    AXGET_FUN_BEGIN
 
     /* `write' may write less than LEN bytes, thus the loop keeps trying
        it until all was written, or an error occurred.  */
@@ -97,6 +114,7 @@ int fd_write (int fd, char *buf, int bufsize)
         buf += res;
         bufsize -= res;
     }
+    AXGET_FUN_LEAVE
     return res;
 }
 
@@ -112,13 +130,19 @@ int fd_write (int fd, char *buf, int bufsize)
 
 const char * fd_errstr (int fd)
 {
+    AXGET_FUN_BEGIN
+
     if (info && info->imp->errstr)
     {
         const char *err = info->imp->errstr (fd, info->ctx);
         if (err)
+        {
+            AXGET_FUN_LEAVE
             return err;
+        }
         /* else, fall through and print the system error. */
     }
+    AXGET_FUN_LEAVE
     return strerror (errno);
 }
 
@@ -126,7 +150,9 @@ const char * fd_errstr (int fd)
 
 void fd_close (int fd)
 {
+    AXGET_FUN_BEGIN
     info->imp->closer (fd, info->ctx);
+    AXGET_FUN_LEAVE
 }
 
 /* Wait for a single descriptor to become available, timing out after
@@ -145,6 +171,8 @@ int select_fd (int fd, double maxtime, int wait_for)
     struct timeval tmout;
     int result;
 
+    AXGET_FUN_BEGIN
+
     FD_ZERO (&fdset);
     FD_SET (fd, &fdset);
     if (wait_for & WAIT_FOR_READ)
@@ -161,5 +189,6 @@ int select_fd (int fd, double maxtime, int wait_for)
     }
     while (result < 0 && errno == EINTR);
 
+    AXGET_FUN_RETURN_D(result)
     return result;
 }

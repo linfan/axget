@@ -42,6 +42,15 @@ extern FILE *axget_trace;
 #define AXGET_FUN_LEAVE fprintf(axget_trace, "%s [LEAVE] %s @ %s:%d\n", \
         __TIME__, __FUNCTION__, __FILE__, __LINE__); \
         fflush(axget_trace);
+#define AXGET_FUN_RETURN_D(RET) fprintf(axget_trace, "%s [LEAVE] %s @ %s:%d <Code %d>\n", \
+        __TIME__, __FUNCTION__, __FILE__, __LINE__, RET); \
+        fflush(axget_trace);
+#define AXGET_FUN_RETURN_F(RET) fprintf(axget_trace, "%s [LEAVE] %s @ %s:%f <Value %d>\n", \
+        __TIME__, __FUNCTION__, __FILE__, __LINE__, RET); \
+        fflush(axget_trace);
+#define AXGET_FUN_RETURN_S(RET) fprintf(axget_trace, "%s [LEAVE] %s @ %s:%s <Msg: %d>\n", \
+        __TIME__, __FUNCTION__, __FILE__, __LINE__, RET); \
+        fflush(axget_trace);
 #define AXGET_MAIN_BEGIN \
     axget_trace = fopen("./axget.trc", "a"); \
     if (!axget_trace) \
@@ -58,6 +67,9 @@ extern FILE *axget_trace;
 #else
 #define AXGET_FUN_BEGIN
 #define AXGET_FUN_LEAVE
+#define AXGET_FUN_RETURN_D(RET)
+#define AXGET_FUN_RETURN_F(RET)
+#define AXGET_FUN_RETURN_S(RET)
 #define AXGET_MAIN_BEGIN
 #define AXGET_MAIN_LEAVE
 #endif

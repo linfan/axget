@@ -56,9 +56,14 @@ static void init_prng(conf_t *opt)
     char namebuf[256];
     const char *random_file;
 
+    AXGET_FUN_BEGIN
+
     /* The PRNG has been seeded; no further action is necessary. */
     if(RAND_status())
+    {
+        AXGET_FUN_LEAVE
         return;
+    }
 
     /* Seed from a file specified by the user.  This will be the file specified
      * with --random-file, $RANDFILE, if set, or ~/.rnd, if it exists.  */
@@ -76,7 +81,10 @@ static void init_prng(conf_t *opt)
         RAND_load_file(random_file, 16384);
 
     if(RAND_status())
+    {
+        AXGET_FUN_LEAVE
         return;
+    }
 
     /* Get random data from EGD if opt->egd_file was used.  */
 //    if (opt->egd_file && *opt->egd_file)
@@ -110,6 +118,7 @@ static void init_prng(conf_t *opt)
         }
     }
 //#endif
+    AXGET_FUN_LEAVE
 }
 
 /* Print errors in the OpenSSL error stack. */
@@ -130,6 +139,8 @@ static void print_errors(void)
 
 static int key_type_to_ssl_type(enum keyfile_type type)
 {
+    AXGET_FUN_BEGIN
+
     switch(type)
     {
     case keyfile_pem:
@@ -141,6 +152,7 @@ static int key_type_to_ssl_type(enum keyfile_type type)
     default:
         abort();
     }
+    AXGET_FUN_LEAVE
 }
 
 /* Create an SSL Context and set default paths etc.  Called the first
@@ -152,17 +164,21 @@ bool ssl_init(conf_t *opt)
 {
     SSL_METHOD const *meth;
 
+    AXGET_FUN_BEGIN
+
     if(ssl_ctx)
+    {
         /* The SSL has already been initialized. */
+        AXGET_FUN_LEAVE
         return true;
+    }
 
     /* Init the PRNG.  If that fails, bail out.  */
     init_prng(opt);
 
     if(RAND_status() != 1)
     {
-        echo(WORK_LOG,
-                  _("Could not seed PRNG; consider using --random-file.\n"));
+        echo(WORK_LOG, _("Could not seed PRNG; consider using --random-file.\n"));
         goto error;
     }
 
@@ -235,6 +251,8 @@ bool ssl_init(conf_t *opt)
     /* The OpenSSL library can handle renegotiations automatically, so
        tell it to do so.  */
     SSL_CTX_set_mode(ssl_ctx, SSL_MODE_AUTO_RETRY);
+
+    AXGET_FUN_LEAVE
     return true;
 error:
 
@@ -242,6 +260,8 @@ error:
         SSL_CTX_free(ssl_ctx);
 
     print_errors();
+
+    AXGET_FUN_LEAVE
     return false;
 }
 
@@ -400,6 +420,8 @@ int ssl_connect(int fd, const char *hostname)
 {
     SSL *conn;
     struct openssl_transport_context *ctx;
+
+    AXGET_FUN_BEGIN
     echo(WORK_LOG, "Initiating SSL handshake.\n");
     assert(ssl_ctx != NULL);
     conn = SSL_new(ssl_ctx);
@@ -440,6 +462,7 @@ int ssl_connect(int fd, const char *hostname)
     fd_register_transport(fd, &openssl_transport, ctx);
     echo(WORK_LOG, "Handshake successful; connected socket %d to SSL handle 0x%0*lx\n",
             fd, PTR_FORMAT(conn));
+    AXGET_FUN_LEAVE
     return RET_OK;
 error:
     echo(ERROR_LOG, "SSL handshake failed.\n");
@@ -448,6 +471,7 @@ error:
     if(conn)
         SSL_free(conn);
 
+    AXGET_FUN_LEAVE
     return RET_ERR;
 }
 
@@ -472,7 +496,9 @@ static bool pattern_match(const char *pattern, const char *string)
     const char *p = pattern, *n = string;
     char c;
 
+    AXGET_FUN_BEGIN
     for(; (c = tolower(*p++)) != '\0'; n++)
+    {
         if(c == '*')
         {
             for(c = tolower(*p); c == '*'; c = tolower(*++p))
@@ -480,13 +506,20 @@ static bool pattern_match(const char *pattern, const char *string)
 
             for(; *n != '\0'; n++)
                 if(tolower(*n) == c && pattern_match(p, n))
+                {
+                    AXGET_FUN_LEAVE
                     return true;
+                }
 
 #ifdef ASTERISK_EXCLUDES_DOT
                 else if(*n == '.')
+                {
+                    AXGET_FUN_LEAVE
                     return false;
+                }
 
 #endif
+            AXGET_FUN_LEAVE
             return c == '\0';
         }
         else
@@ -494,7 +527,9 @@ static bool pattern_match(const char *pattern, const char *string)
             if(c != tolower(*n))
                 return false;
         }
+    }
 
+    AXGET_FUN_LEAVE
     return *n == '\0';
 }
 
@@ -526,6 +561,8 @@ bool ssl_check_certificate(int fd, const char *host, conf_t *opt)
     struct openssl_transport_context *ctx = fd_transport_context(fd);
     SSL *conn = ctx->conn;
     assert(conn != NULL);
+
+    AXGET_FUN_BEGIN
     cert = SSL_get_peer_certificate(conn);
 
     if(!cert)
@@ -740,6 +777,8 @@ no_cert:
                   quotearg_style(escape_quoting_style, host));
 
     /* Allow --no-check-cert to disable certificate checking. */
+
+    AXGET_FUN_LEAVE
     return opt->check_cert ? success : true;
 }
 

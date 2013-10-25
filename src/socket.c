@@ -1,5 +1,5 @@
 #include <errno.h>
-//#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -43,7 +43,7 @@ static int sock_peek (int fd, char *buf, int bufsize, void *arg)
 
 static const char* sock_errstr (int fd, void *arg)
 {
-    return (const char*)strerror((int)errno);
+    return (const char*)strerror(errno);
 }
 
 static void sock_close (int fd, void *arg)
@@ -62,7 +62,9 @@ static transport_implementation sock_transport =
 
 int socket_connect(int fd)
 {
+    AXGET_FUN_BEGIN
     fd_register_transport(fd, &sock_transport, NULL);
     return RET_OK;
+    AXGET_FUN_LEAVE
 }
 
