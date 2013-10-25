@@ -1,0 +1,7 @@
+# Everything downloaded
+axget
+*.html
+*.htm
+*.pcap
+*.res
+*.data
