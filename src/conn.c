@@ -27,6 +27,7 @@
 
 #define DEFAULT_FTP_PORT   21
 #define DEFAULT_HTTP_PORT  80
+#define DEFAULT_HTTPS_PORT 443
 
 char string[MAX_STRING];
 
@@ -172,8 +173,10 @@ int conn_set(conn_t *conn, const char *set_url)
 #endif
             if(conn->proto == PROTO_HTTP)
                 conn->port = DEFAULT_HTTP_PORT;
-            else
+            else if(conn->proto == PROTO_FTP)
                 conn->port = DEFAULT_FTP_PORT;
+            else // if(conn->proto == PROTO_HTTPS)
+                conn->port = DEFAULT_HTTPS_PORT;
     }
 
     AXGET_FUN_LEAVE
@@ -288,9 +291,16 @@ int conn_init(conn_t *conn)
             return(0);
         }
     }
-    else
+    else // conn->proto == PROTO_HTTP or PROTO_HTTPS
     {
         conn->http->local_if = conn->local_if;
+
+#ifdef WITH_OPENSSL
+        if (conn->proto == PROTO_HTTPS)
+        {
+            ssl_init(conn->conf);
+        }
+#endif
 
         if(http_connect(conn->http, conn->proto, proxy, 
                 conn->host, conn->port, conn->user, conn->pass) != RET_OK)
